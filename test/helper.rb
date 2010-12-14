@@ -28,6 +28,9 @@ class Person < Mongoo::Base
   attribute "location.demographics.crime_rate", :type => :symbol
   attribute "location.demographics.education_quality", :type => :symbol
   attribute "misc", :type => :hash
+  
+  index "name"
+  index "location.city"
 end
 
 class TvShow < Mongoo::Base
@@ -36,6 +39,8 @@ class TvShow < Mongoo::Base
   attribute "cast.lead", :type => :string
   attribute "rating", :type => :float
   attribute "comments", :type => :array
+  
+  index "name"
   
   validates_presence_of "name"
   validates_presence_of "cast.director"

@@ -16,14 +16,13 @@ module Mongoo
     
     def self.attribute(name, opts={})
       raise ArgumentError.new("missing :type") unless opts[:type]
-      @attributes ||= {}
-      @attributes[name.to_s] = opts
+      self.attributes[name.to_s] = opts
       define_attribute_methods
       true
     end
     
     def self.attributes
-      @attributes || {}
+      Mongoo::ATTRIBUTE_META[self.to_s] ||= {}
     end
     
     def self.attributes_tree

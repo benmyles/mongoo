@@ -64,9 +64,7 @@ module Mongoo
       end
       
       def index_meta
-        Mongoo::INDEX_META[self.collection_name] ||= begin
-          {}
-        end
+        Mongoo::INDEX_META[self.collection_name] ||= {}
       end
       
       def index(spec, opts={})

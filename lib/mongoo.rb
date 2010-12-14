@@ -1,5 +1,6 @@
 module Mongoo
   INDEX_META = {}
+  ATTRIBUTE_META = {}
   
   def self.db
     @db
