@@ -100,17 +100,17 @@ module Mongoo
     end
     
     def insert(opts={})
-      if persisted?
-        raise AlreadyInsertedError, "document has already been inserted"
-      end
-      unless valid?
-        if opts[:safe] == true
-          raise Mongoo::NotValidError, "document contains errors"
-        else
-          return false
-        end
-      end
       _run_insert_callbacks do
+        if persisted?
+          raise AlreadyInsertedError, "document has already been inserted"
+        end
+        unless valid?
+          if opts[:safe] == true
+            raise Mongoo::NotValidError, "document contains errors"
+          else
+            return false
+          end
+        end
         ret = self.collection.insert(mongohash.deep_clone, opts)
         unless ret.is_a?(BSON::ObjectId)
           raise InsertError, "not an object: #{ret.inspect}"
@@ -126,21 +126,21 @@ module Mongoo
     end
     
     def update(opts={})
-      unless persisted?
-        raise NotInsertedError, "document must be inserted before being updated"
-      end
-      unless valid?
-        if opts[:safe] == true
-          raise Mongoo::NotValidError, "document contains errors"
-        else
-          return false
-        end
-      end
-      opts[:only_if_current] = true unless opts.has_key?(:only_if_current)
-      opts[:safe] = true if !opts.has_key?(:safe) && opts[:only_if_current] == true
-      update_hash = build_update_hash(self.changelog)
-      return true if update_hash.empty?
       _run_update_callbacks do
+        unless persisted?
+          raise NotInsertedError, "document must be inserted before being updated"
+        end
+        unless valid?
+          if opts[:safe] == true
+            raise Mongoo::NotValidError, "document contains errors"
+          else
+            return false
+          end
+        end
+        opts[:only_if_current] = true unless opts.has_key?(:only_if_current)
+        opts[:safe] = true if !opts.has_key?(:safe) && opts[:only_if_current] == true
+        update_hash = build_update_hash(self.changelog)
+        return true if update_hash.empty?
         update_query_hash = build_update_query_hash(persisted_mongohash.to_key_value, self.changelog)
         ret = self.collection.update(update_query_hash.merge({"_id" => get("_id")}), update_hash, opts)
         if !ret.is_a?(Hash) || (ret["updatedExisting"] && ret["n"] == 1)
@@ -169,10 +169,10 @@ module Mongoo
     end
     
     def remove(opts={})
-      unless persisted?
-        raise NotInsertedError, "document must be inserted before it can be removed"
-      end
       _run_remove_callbacks do
+        unless persisted?
+          raise NotInsertedError, "document must be inserted before it can be removed"
+        end
         ret = self.collection.update({"_id" => get("_id")}, opts)
         if !ret.is_a?(Hash) || (ret["err"] == nil && ret["n"] == 1)
           @destroyed = true
