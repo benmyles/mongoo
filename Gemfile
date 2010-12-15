@@ -2,7 +2,7 @@ source "http://rubygems.org"
 # Add dependencies required to use your gem here.
 # Example:
 
-gem "i18n", "~> 0.5.0"
+gem "i18n", "~> 0.4.1"
 gem "activesupport", "~> 3.0.3"
 gem "activemodel", "~> 3.0.3"
 gem "mongo", "~> 1.1.4"
