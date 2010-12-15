@@ -75,6 +75,16 @@ module Mongoo
       set_persisted_mongohash((persisted? ? mongohash.deep_clone : nil))
     end
     
+    def ==(val)
+      if val.class.to_s == self.class.to_s
+        if val.persisted?
+          val.id == self.id
+        else
+          self.mongohash.raw_hash == val.mongohash.raw_hash
+        end
+      end
+    end
+    
     def known_attribute?(k)
       self.class.known_attribute?(k)
     end
