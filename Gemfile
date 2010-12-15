@@ -2,11 +2,11 @@ source "http://rubygems.org"
 # Add dependencies required to use your gem here.
 # Example:
 
-gem "i18n", "~> 0.4.1"
-gem "activesupport", "~> 3.0.3"
-gem "activemodel", "~> 3.0.3"
-gem "mongo", "~> 1.1.4"
-gem "bson_ext", "~> 1.1.4"
+gem "i18n", ">= 0.4.1"
+gem "activesupport", ">= 3.0.3"
+gem "activemodel", ">= 3.0.3"
+gem "mongo", ">= 1.1.4"
+gem "bson_ext", ">= 1.1.4"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
