@@ -23,8 +23,6 @@ module Mongoo
           val.is_a?(Hash) ? val : raise(InvalidAttributeValue, val.inspect)
         when :time then
           val.is_a?(Time) ? val : Time.parse(val)
-        when :date then
-          val.is_a?(Date) ? val : Date.parse(val)
         when :bool then
           if [true,false].include?(val)
             val
