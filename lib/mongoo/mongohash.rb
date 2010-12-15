@@ -11,7 +11,7 @@ module Mongoo
     attr_reader :raw_hash
     
     def initialize(hash={})
-      @raw_hash = hash
+      @raw_hash = hash.stringify_keys
     end
 
     def deep_clone

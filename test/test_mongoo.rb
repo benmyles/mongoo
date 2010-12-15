@@ -247,4 +247,9 @@ class TestMongoo < Test::Unit::TestCase
     assert show.valid?
     show.insert!
   end
+  
+  should "not care if keys are symbols or hashes" do
+    p = Person.new(:name => "Ben")
+    assert_equal "Ben", p.name
+  end
 end
