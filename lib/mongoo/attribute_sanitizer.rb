@@ -21,6 +21,20 @@ module Mongoo
           val.is_a?(BSON::ObjectId) ? val : BSON::ObjectId(val)
         when :hash then
           val.is_a?(Hash) ? val : raise(InvalidAttributeValue, val.inspect)
+        when :time then
+          val.is_a?(Time) ? val : Time.parse(val)
+        when :date then
+          val.is_a?(Date) ? val : Date.parse(val)
+        when :bool then
+          if [true,false].include?(val)
+            val
+          elsif ["t","1","true","y","yes"].include?(val.to_s.downcase)
+            true
+          elsif ["f","0","false","n","no"].include?(val.to_s.downcase)
+            false
+          end
+        when :html_escaped_string then
+          ERB::Util.html_escape(val.to_s)
         end # case
       end # sanitize
     end # << self
