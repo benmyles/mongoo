@@ -252,4 +252,17 @@ class TestMongoo < Test::Unit::TestCase
     p = Person.new(:name => "Ben")
     assert_equal "Ben", p.name
   end
+  
+  should "be able to merge properties into the mongohash" do
+    p = Person.new("name" => "Ben", "visits" => 10, "location" => { "city" => "SF" })
+    p.insert!
+    p = Person.find_one(p.id)
+    assert_equal "Ben", p.name
+    assert_equal 10, p.visits
+    assert_equal "SF", p.location.city
+    p.merge!({"visits" => 12, "location" => { "demographics" => {"crime_rate" => :high} } })
+    assert_equal "Ben", p.name
+    assert_equal 12, p.visits
+    assert_equal "SF", p.location.city
+  end
 end

@@ -143,6 +143,15 @@ module Mongoo
     def attributes
       mongohash.to_key_value
     end
+    
+    def merge!(hash)
+      if hash.is_a?(Mongoo::Mongohash)
+        hash = hash.raw_hash
+      end
+      hash = mongohash.raw_hash.rmerge(hash)
+      set_mongohash( Mongoo::Mongohash.new(hash) )
+      mongohash
+    end
         
     def init_from_hash(hash)
       if hash.is_a?(Mongoo::Mongohash)

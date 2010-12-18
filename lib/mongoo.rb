@@ -17,6 +17,7 @@ require "mongo"
 require "active_support/core_ext"
 require "active_model"
 
+require "hash_recursive_merge"
 require "mongoo/cursor"
 require "mongoo/attribute_sanitizer"
 require "mongoo/attribute_proxy"
