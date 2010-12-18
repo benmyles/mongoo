@@ -148,7 +148,8 @@ module Mongoo
       if hash.is_a?(Mongoo::Mongohash)
         hash = hash.raw_hash
       end
-      hash = mongohash.raw_hash.rmerge(hash)
+      hash.deep_stringify_keys!
+      hash = mongohash.raw_hash.deep_merge(hash)
       set_mongohash( Mongoo::Mongohash.new(hash) )
       mongohash
     end
