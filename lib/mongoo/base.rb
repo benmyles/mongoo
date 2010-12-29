@@ -155,11 +155,11 @@ module Mongoo
     end
         
     def init_from_hash(hash)
-      if hash.is_a?(Mongoo::Mongohash)
-        set_mongohash hash
-      else
-        set_mongohash Mongoo::Mongohash.new(hash)
+      unless hash.is_a?(Mongoo::Mongohash)
+        hash = Mongoo::Mongohash.new(hash)
       end
+      verify_attributes_in_mongohash(hash)
+      set_mongohash hash
     end
     protected :init_from_hash
     
@@ -180,5 +180,24 @@ module Mongoo
     def persisted_mongohash
       @persisted_mongohash
     end
+    
+    def verify_attributes_in_mongohash(hash)
+      known_keys = self.class.attributes.keys
+      known_keys << "_id"
+      hash.dot_list.each do |k|
+        unless known_keys.include?(k)
+          k.split(".").each do |part|
+            if opts = self.class.attributes[part]
+              if opts[:type] == :hash
+                known_keys << k
+              end
+            end
+          end
+          unless known_keys.include?(k)
+            raise Mongoo::UnknownAttributeError, k.to_s
+          end
+        end
+      end
+    end # verify_attributes_in_mongohash
   end
 end
