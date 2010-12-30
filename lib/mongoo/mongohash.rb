@@ -11,7 +11,7 @@ module Mongoo
     attr_reader :raw_hash
     
     def initialize(hash={})
-      hash = hash.to_hash unless hash.is_a?(Hash)
+      hash = hash.to_hash unless hash.class.to_s == "Hash"
       @raw_hash = hash.deep_stringify_keys
     end
 
