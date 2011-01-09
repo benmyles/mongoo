@@ -23,6 +23,26 @@ module Mongoo
       end
     end
   
+    def sort(key_or_list, direction=nil)
+      @mongo_cursor.sort(key_or_list, direction)
+      self
+    end
+    
+    def limit(number_to_return=nil)
+      @mongo_cursor.limit(number_to_return)
+      self
+    end
+    
+    def skip(number_to_return=nil)
+      @mongo_cursor.skip(number_to_return)
+      self
+    end
+    
+    def batch_size(size=0)
+      @mongo_cursor.batch_size(size)
+      self
+    end
+  
     def method_missing(name, *args)
       if @mongo_cursor.respond_to?(name)
         @mongo_cursor.send name, *args
