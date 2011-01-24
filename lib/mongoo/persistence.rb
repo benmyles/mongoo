@@ -142,6 +142,9 @@ module Mongoo
         update_hash = build_update_hash(self.changelog)
         return true if update_hash.empty?
         update_query_hash = build_update_query_hash(persisted_mongohash.to_key_value, self.changelog)
+        if Mongoo.verbose_debug
+          puts "\n* update_query_hash: #{update_query_hash.merge({"_id" => get("_id")}.inspect}\n  update_hash: #{update_hash.inspect}\n  opts: #{opts.inspect}\n"
+        end
         ret = self.collection.update(update_query_hash.merge({"_id" => get("_id")}), update_hash, opts)
         if !ret.is_a?(Hash) || (ret["updatedExisting"] && ret["n"] == 1)
           set_persisted_mongohash(mongohash.deep_clone)

@@ -9,6 +9,14 @@ module Mongoo
   def self.db=(db)
     @db = db
   end
+  
+  def self.verbose_debug
+    @verbose_debug
+  end
+  
+  def self.verbose_debug=(val)
+    @verbose_debug = val
+  end
 end
 
 require "forwardable"
