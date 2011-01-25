@@ -176,7 +176,7 @@ module Mongoo
         unless persisted?
           raise NotInsertedError, "document must be inserted before it can be removed"
         end
-        ret = self.collection.update({"_id" => get("_id")}, opts)
+        ret = self.collection.remove({"_id" => get("_id")}, opts)
         if !ret.is_a?(Hash) || (ret["err"] == nil && ret["n"] == 1)
           @destroyed = true
           true
