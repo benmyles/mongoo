@@ -22,7 +22,8 @@ module Mongoo
         when :hash then
           val.is_a?(Hash) ? val : raise(InvalidAttributeValue, val.inspect)
         when :time then
-          val.is_a?(Time) ? val : Time.parse(val)
+          Time.parse(val.to_s)
+          # val.is_a?(Time) ? val : Time.parse(val)
         when :bool then
           if [true,false].include?(val)
             val

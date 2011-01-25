@@ -70,7 +70,8 @@ module Mongoo
       k == "_id" || self.attributes[k.to_s]
     end
     
-    def initialize(hash={})
+    def initialize(hash={}, persisted=false)
+      @persisted = persisted
       init_from_hash(hash)
       set_persisted_mongohash((persisted? ? mongohash.deep_clone : nil))
     end

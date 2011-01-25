@@ -36,7 +36,7 @@ module Mongoo
       
       def find_one(query={}, opts={})
         return nil unless doc = collection.find_one(query, opts)
-        new(doc)
+        new(doc, true)
       end
       
       def all
@@ -92,7 +92,8 @@ module Mongoo
     end
     
     def persisted?
-      !get("_id").nil?
+      @persisted == true
+      #!get("_id").nil?
     end
     
     def collection
@@ -116,6 +117,7 @@ module Mongoo
           raise InsertError, "not an object: #{ret.inspect}"
         end
         set("_id", ret)
+        @persisted = true
         set_persisted_mongohash(mongohash.deep_clone)
         ret
       end
@@ -142,9 +144,13 @@ module Mongoo
         update_hash = build_update_hash(self.changelog)
         return true if update_hash.empty?
         update_query_hash = build_update_query_hash(persisted_mongohash.to_key_value, self.changelog)
+        if Mongoo.verbose_debug
+          puts "\n* update_query_hash: #{update_query_hash.merge({"_id" => get("_id")}).inspect}\n  update_hash: #{update_hash.inspect}\n  opts: #{opts.inspect}\n"
+        end
         ret = self.collection.update(update_query_hash.merge({"_id" => get("_id")}), update_hash, opts)
         if !ret.is_a?(Hash) || (ret["updatedExisting"] && ret["n"] == 1)
           set_persisted_mongohash(mongohash.deep_clone)
+          @persisted = true
           true
         else
           if opts[:only_if_current]
@@ -173,9 +179,10 @@ module Mongoo
         unless persisted?
           raise NotInsertedError, "document must be inserted before it can be removed"
         end
-        ret = self.collection.update({"_id" => get("_id")}, opts)
+        ret = self.collection.remove({"_id" => get("_id")}, opts)
         if !ret.is_a?(Hash) || (ret["err"] == nil && ret["n"] == 1)
           @destroyed = true
+          @persisted = false
           true
         else
           raise RemoveError, ret.inspect
@@ -189,6 +196,7 @@ module Mongoo
     
     def reload
       init_from_hash(collection.find_one(get("_id")))
+      @persisted = true
       set_persisted_mongohash(mongohash.deep_clone)
       true
     end
