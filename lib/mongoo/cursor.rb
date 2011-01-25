@@ -11,7 +11,7 @@ module Mongoo
   
     def next_document
       if doc = @mongo_cursor.next_document
-        @obj_class.new(doc)
+        @obj_class.new(doc, true)
       end
     end
   
@@ -19,7 +19,7 @@ module Mongoo
   
     def each
       @mongo_cursor.each do |doc|
-        yield(@obj_class.new(doc))
+        yield(@obj_class.new(doc, true))
       end
     end
   
