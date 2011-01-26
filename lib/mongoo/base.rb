@@ -106,7 +106,7 @@ module Mongoo
     def set_attribute(k,v)
       unless known_attribute?(k)
         if self.respond_to?("#{k}=")
-          self.send("#{k}=", v)
+          return self.send("#{k}=", v)
         else
           raise UnknownAttributeError, k
         end
