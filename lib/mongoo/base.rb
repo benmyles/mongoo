@@ -105,7 +105,11 @@ module Mongoo
     
     def set_attribute(k,v)
       unless known_attribute?(k)
-        raise UnknownAttributeError, k
+        if self.respond_to?("#{k}=")
+          self.send("#{k}=", v)
+        else
+          raise UnknownAttributeError, k
+        end
       end
       unless k.to_s == "_id" || v.nil?
         field_type = self.class.attributes[k.to_s][:type]
