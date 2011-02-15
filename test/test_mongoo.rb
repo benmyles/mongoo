@@ -3,7 +3,7 @@ require 'helper'
 class TestMongoo < Test::Unit::TestCase
   
   def setup
-    [Person, TvShow].each do |obj|
+    [Person, TvShow, SearchIndex].each do |obj|
       obj.drop
       obj.create_indexes
     end
@@ -264,5 +264,12 @@ class TestMongoo < Test::Unit::TestCase
     assert_equal "Ben", p.name
     assert_equal 12, p.visits
     assert_equal "SF", p.location.city
+  end
+  
+  should "not fail on an empty array" do
+    i = SearchIndex.new(:terms => [])
+    i.insert!
+    i.terms << "foo"
+    i.update!
   end
 end

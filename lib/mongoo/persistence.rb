@@ -215,6 +215,12 @@ module Mongoo
       update_query_hash = {}
       changelog.each do |op, k, v|
         if persisted_val = persisted_mongohash_kv[k]
+          if persisted_val == []
+            # work around a bug where mongo won't find a doc
+            # using an empty array [] if an index is defined
+            # on that field.
+            persisted_val = { "$size" => 0 }
+          end
           update_query_hash[k] = persisted_val
         end
       end

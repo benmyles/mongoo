@@ -16,6 +16,11 @@ require 'mongoo'
 
 Mongoo.db = Mongo::Connection.new.db('mongoo-test')
 
+class SearchIndex < Mongoo::Base
+  attribute "terms", :type => :array
+  index "terms"
+end
+
 class Person < Mongoo::Base
   attribute "name", :type => :string
   attribute "visits", :type => :integer
