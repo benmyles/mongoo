@@ -27,7 +27,10 @@ module Mongoo
       end
       
       def em_db
-        @em_db ||= Mongoo.em_db
+        @em_db ||= begin
+          host, port = db.connection.host_to_try
+          EM::Mongo::Connection.new(host, port).db(db.name)
+        end
       end
       
       def db=(db)

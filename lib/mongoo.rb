@@ -10,14 +10,14 @@ module Mongoo
   end
   
   def self.em_db
-    @em_db
+    @em_db ||= begin
+      host, port = db.connection.host_to_try
+      EM::Mongo::Connection.new(host, port).db(db.name)
+    end
   end
   
   def self.db=(db)
     @db = db
-    host, port = db.connection.host_to_try
-    @em_db = EM::Mongo::Connection.new(host, port).db(db.name)
-    @db
   end
   
   def self.verbose_debug
