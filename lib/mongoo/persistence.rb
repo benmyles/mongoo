@@ -26,8 +26,22 @@ module Mongoo
         @db ||= Mongoo.db
       end
       
+      def em_db
+        @em_db ||= Mongoo.em_db
+      end
+      
       def db=(db)
         @db = db
+        host, port = db.connection.host_to_try
+        @em_db = EM::Mongo::Connection.new(host, port).db(db.name)
+        @db
+      end
+      
+      # cursor is not supported for em_find (yet)
+      def em_find(query={}, opts={})
+        em_db.collection(collection_name).find(query, opts).collect do |doc|
+          new(doc, true)
+        end
       end
       
       def find(query={}, opts={})

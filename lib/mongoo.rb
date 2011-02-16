@@ -1,3 +1,6 @@
+require 'em-synchrony'
+require 'em-synchrony/em-mongo'
+
 module Mongoo
   INDEX_META = {}
   ATTRIBUTE_META = {}
@@ -6,8 +9,15 @@ module Mongoo
     @db
   end
   
+  def self.em_db
+    @em_db
+  end
+  
   def self.db=(db)
     @db = db
+    host, port = db.connection.host_to_try
+    @em_db = EM::Mongo::Connection.new(host, port).db(db.name)
+    @db
   end
   
   def self.verbose_debug

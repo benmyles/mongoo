@@ -8,6 +8,9 @@ gem "activemodel", ">= 3.0.3"
 gem "mongo", ">= 1.2.1"
 gem "bson_ext", ">= 1.2.0"
 
+gem 'em-synchrony'
+gem 'em-mongo'
+
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
 group :development do
