@@ -199,7 +199,8 @@ module Mongoo
             end
           end
           unless known_keys.include?(k)
-            raise Mongoo::UnknownAttributeError, k.to_s
+            # this is just annoying.
+            #raise Mongoo::UnknownAttributeError, k.to_s
           end
         end
       end

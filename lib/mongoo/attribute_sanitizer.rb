@@ -4,7 +4,7 @@ module Mongoo
   class AttributeSanitizer
     class << self
       def sanitize(field_type, val)
-        return val if val.nil?
+        return val if val.nil? || field_type.nil?
         
         case field_type.to_sym
         when :string then
