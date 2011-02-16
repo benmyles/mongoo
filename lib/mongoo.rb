@@ -2,12 +2,23 @@ module Mongoo
   INDEX_META = {}
   ATTRIBUTE_META = {}
   
-  def self.db
-    @db
+  def self.config
+    { host: "127.0.0.1",
+      port: 27017,
+      db: "test",
+      opts: {}}.merge(@config || {})
   end
   
-  def self.db=(db)
-    @db = db
+  def self.config=(cfg)
+    @config = cfg
+  end
+  
+  def self.conn
+    @conn ||= Mongo::Connection.new(config[:host], config[:port], config[:opts])
+  end
+  
+  def self.db
+    @db ||= conn.db(config[:db])
   end
   
   def self.verbose_debug

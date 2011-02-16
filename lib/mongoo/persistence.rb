@@ -22,8 +22,32 @@ module Mongoo
         @collection ||= db.collection(collection_name)
       end
       
+      def conn
+        @conn ||= begin
+          if Mongoo.config == config
+            Mongoo.conn
+          else
+            Mongo::Connection.new(config[:host], config[:port], config[:opts])
+          end
+        end
+      end
+      
       def db
-        @db ||= Mongoo.db
+        @db ||= begin
+          if Mongoo.config == config
+            Mongoo.db
+          else
+            conn.db(config[:db])
+          end
+        end
+      end
+      
+      def config=(cfg)
+        @config = cfg
+      end
+      
+      def config
+        @config || Mongoo.config
       end
       
       def db=(db)

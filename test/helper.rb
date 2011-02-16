@@ -14,7 +14,7 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'mongoo'
 
-Mongoo.db = Mongo::Connection.new.db('mongoo-test')
+Mongoo.config = {host: "127.0.0.1", port: 27017, db: 'mongoo-test'}
 
 class SearchIndex < Mongoo::Base
   attribute "terms", :type => :array
