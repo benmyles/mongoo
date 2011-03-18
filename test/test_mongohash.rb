@@ -43,7 +43,7 @@ class TestMongohash < Test::Unit::TestCase
       self.verify_attributes = false
     end
     
-    assert_false ShopKeep.verify_attributes
+    assert !ShopKeep.verify_attributes
     assert Person.verify_attributes
   end
 end
