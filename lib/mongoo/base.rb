@@ -13,6 +13,11 @@ module Mongoo
     extend ActiveModel::Naming
     
     define_model_callbacks :insert, :update, :remove
+
+    # Should we allow unknown attributes added to the document?
+    #   Set this to false to skip verification and allow dynamic document attributes.
+    class_attribute :verify_attributes
+    self.verify_attributes = true
     
     def self.attribute(name, opts={})
       raise ArgumentError.new("missing :type") unless opts[:type]
@@ -184,12 +189,6 @@ module Mongoo
     
     def persisted_mongohash
       @persisted_mongohash
-    end
-    
-    # Should we allow unknown attributes added to the document?
-    #   Override in a subclass to skip verification and allow dynamic document attributes on creation and load.
-    def self.verify_attributes
-      true
     end
     
     def verify_attributes_in_mongohash(hash)

@@ -37,4 +37,13 @@ class TestMongohash < Test::Unit::TestCase
     Person.stubs(:verify_attributes => false)
     assert_nothing_raised { Person.new(:idontexist => "bah") }
   end
+  
+  should "not impact verify_attributes on parent classes" do
+    class ShopKeep < Person
+      self.verify_attributes = false
+    end
+    
+    assert_false ShopKeep.verify_attributes
+    assert Person.verify_attributes
+  end
 end
