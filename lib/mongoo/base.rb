@@ -163,7 +163,7 @@ module Mongoo
       unless hash.is_a?(Mongoo::Mongohash)
         hash = Mongoo::Mongohash.new(hash)
       end
-      verify_attributes_in_mongohash(hash)
+      verify_attributes_in_mongohash(hash) if self.class.verify_attributes
       set_mongohash hash
     end
     protected :init_from_hash
@@ -184,6 +184,12 @@ module Mongoo
     
     def persisted_mongohash
       @persisted_mongohash
+    end
+    
+    # Should we allow unknown attributes added to the document?
+    #   Override in a subclass to skip verification and allow dynamic document attributes on creation and load.
+    def self.verify_attributes
+      true
     end
     
     def verify_attributes_in_mongohash(hash)

@@ -32,4 +32,9 @@ class TestMongohash < Test::Unit::TestCase
   should "not be able to initialize an object with undefined attributes" do
     assert_raise(Mongoo::UnknownAttributeError) { Person.new(:idontexist => "bah") }
   end
+
+  should "be able to initialize an object with undefined attributes if verify_attributes is false" do
+    Person.stubs(:verify_attributes => false)
+    assert_nothing_raised { Person.new(:idontexist => "bah") }
+  end
 end
