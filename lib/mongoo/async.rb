@@ -29,8 +29,8 @@ if ENV["ASYNC"] == "1" || (ENV["SYNC"] != "1" && (defined?(EM) && EM.reactor_run
     end
   end
 
-  if defined?(RAILS_DEFAULT_LOGGER)
-    RAILS_DEFAULT_LOGGER.info "* Mongoo Running in Asynchronous Mode"
+  if defined?(::Rails)
+    ::Rails.logger.info "* Mongoo Running in Asynchronous Mode"
   else
     puts "* Mongoo Running in Asynchronous Mode" if ENV["DEBUG"] == "1"
   end
@@ -41,8 +41,8 @@ else
     end
   end
   
-  if defined?(RAILS_DEFAULT_LOGGER)
-    RAILS_DEFAULT_LOGGER.info "* Mongoo Running in Synchronous Mode"
+  if defined?(::Rails)
+    ::Rails.logger.info "* Mongoo Running in Synchronous Mode"
   else
     puts "* Mongoo Running in Synchronous Mode" if ENV["DEBUG"] == "1"
   end
