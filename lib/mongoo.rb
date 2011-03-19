@@ -33,6 +33,8 @@ end
 require "forwardable"
 require "mongo"
 
+require "mongoo/async"
+
 require "active_support/core_ext"
 require "active_model"
 

@@ -1,7 +1,13 @@
 require 'rubygems'
 require 'bundler'
 begin
-  Bundler.setup(:default, :development)
+  groups = [:default, :development]
+  if defined?(EM) && EM.reactor_running?
+    groups << :async
+  else
+    groups << :sync
+  end
+  Bundler.setup(groups)
 rescue Bundler::BundlerError => e
   $stderr.puts e.message
   $stderr.puts "Run `bundle install` to install missing gems"
