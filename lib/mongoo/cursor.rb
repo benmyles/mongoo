@@ -22,6 +22,10 @@ module Mongoo
         yield(@obj_class.new(doc, true))
       end
     end
+
+    def count
+      @mongo_cursor.count
+    end
   
     def sort(key_or_list, direction=nil)
       @mongo_cursor.sort(key_or_list, direction)
