@@ -5,7 +5,7 @@ source "http://rubygems.org"
 gem "i18n", ">= 0.4.1"
 gem "activesupport", ">= 3.0.3"
 gem "activemodel", ">= 3.0.3"
-gem "bson_ext", ">= 1.2.4"
+#gem "bson_ext", ">= 1.2.4"
 gem "mongo", ">= 1.2.4"
 
 gem "em-synchrony", ">= 0.2.0"
