@@ -79,6 +79,9 @@ module Mongoo
     end
     
     def run!
+      if @queue.blank?
+        raise ModifierUpdateError, "modifier update queue is empty"
+      end
       ret = @doc.collection.update({"_id" => @doc.id}, @queue, @opts)
       if !ret.is_a?(Hash) || (ret["err"] == nil && ret["n"] == 1)
         @queue.each do |op, op_queue|
