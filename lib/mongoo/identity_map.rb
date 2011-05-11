@@ -3,16 +3,30 @@ module Mongoo
 
     class << self
 
-      def on!;  @on =  true;  end
-      def on?;  @on == true;  end
-      def off!; @on =  false; end
-      def off?; @on == false; end
+      def on!
+        @on = true
+      end
+
+      def on?
+        @on == true
+      end
+
+      def off!
+        @on = false
+        if Thread.current[:mongoo]
+          Thread.current[:mongoo][:identity_map] = nil
+        end; true
+      end
+
+      def off?
+        @on == false
+      end
 
       def store
         return nil unless on?
-        Thread.local[:mongoo] ||= {}
-        Thread.local[:mongoo][:identity_map] ||= {}
-        Thread.local[:mongoo][:identity_map][:store] ||= {}
+        Thread.current[:mongoo] ||= {}
+        Thread.current[:mongoo][:identity_map] ||= {}
+        Thread.current[:mongoo][:identity_map][:store] ||= {}
       end
 
       def simple_query?(query, opts)
@@ -36,7 +50,7 @@ module Mongoo
 
       def flush!
         if store
-          Thread.local[:mongoo][:identity_map][:store] = {}
+          Thread.current[:mongoo][:identity_map][:store] = {}
           true
         end
       end
