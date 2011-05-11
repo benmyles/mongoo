@@ -21,3 +21,19 @@
   class Person < Mongoo::Base
     collection_name "spacemen"
   end
+
+
+* There is a new Identity Map feature available. It will only work when using find_one to
+  find a specific id. You need to manually turn it on:
+
+    Mongoo::IdentityMap.on!
+
+  If using it in a web application like Rails be sure to flush the map after each request:
+
+    Mongoo::IdentityMap.flush!
+
+  The map is scoped to the current thread or fiber. You can also turn the map back off:
+
+    Mongoo::IdentityMap.off!
+
+  Inspired by: http://railstips.org/blog/archives/2010/02/21/mongomapper-07-identity-map/

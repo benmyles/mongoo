@@ -56,4 +56,21 @@ class TestIdentityMap < Test::Unit::TestCase
     Mongoo::IdentityMap.off!
   end
 
+  should "use id map for simple queries only" do
+    Mongoo::IdentityMap.on!
+
+    p = Person.new("name" => "Ben")
+    p.insert!
+    p.name = "Not Ben"
+
+    assert_equal "Not Ben", Person.find_one(p.id).name
+    assert_equal "Not Ben", Person.find_one({"_id" => p.id}).name
+    assert_equal "Not Ben", Person.find_one({:_id => p.id}).name
+
+    assert_equal "Ben", Person.find_one(p.id, {sort: [["_id",-1]]}).name
+    assert_equal "Ben", Person.find({"_id" => p.id}).next.name
+
+    Mongoo::IdentityMap.off!
+  end
+
 end

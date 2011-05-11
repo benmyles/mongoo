@@ -146,7 +146,7 @@ module Mongoo
     end
 
     def insert(opts={})
-      _run_insert_callbacks do
+      ret = _run_insert_callbacks do
         if persisted?
           raise AlreadyInsertedError, "document has already been inserted"
         end
@@ -166,6 +166,8 @@ module Mongoo
         set_persisted_mongohash(mongohash.deep_clone)
         ret
       end
+      Mongoo::IdentityMap.write(self) if Mongoo::IdentityMap.on?
+      ret
     end
 
     def insert!(opts={})

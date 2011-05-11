@@ -38,7 +38,11 @@ module Mongoo
 
       def read(id)
         if store
-          store[id.to_s]
+          if id.is_a?(BSON::ObjectId)
+            store[id.to_s]
+          elsif id.is_a?(Hash)
+            store[(id[:_id] || id["_id"]).to_s]
+          end
         end
       end
 
