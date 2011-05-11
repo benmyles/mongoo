@@ -73,4 +73,45 @@ class TestIdentityMap < Test::Unit::TestCase
     Mongoo::IdentityMap.off!
   end
 
+  should "store results from find.to_a in map" do
+    p = Person.new("name" => "Ben")
+    p.insert!
+    Mongoo::IdentityMap.on!
+
+    people = Person.find.to_a
+    people[0].name = "Not Ben"
+
+    assert_equal "Not Ben", Person.find_one(p.id).name
+
+    Mongoo::IdentityMap.off!
+  end
+
+  should "store results from find.each in map" do
+    p = Person.new("name" => "Ben")
+    p.insert!
+    Mongoo::IdentityMap.on!
+
+    people = []
+    Person.find.each { |p| people << p }
+    people[0].name = "Not Ben"
+
+    assert_equal "Not Ben", Person.find_one(p.id).name
+
+    Mongoo::IdentityMap.off!
+  end
+
+  should "store results from find.next in map" do
+    p = Person.new("name" => "Ben")
+    p.insert!
+    Mongoo::IdentityMap.on!
+
+    people = []
+    people << Person.find.next
+
+    people[0].name = "Not Ben"
+
+    assert_equal "Not Ben", Person.find_one(p.id).name
+
+    Mongoo::IdentityMap.off!
+  end
 end
