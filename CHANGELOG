@@ -1,0 +1,23 @@
+= 0.2.0
+
+* Depends on mongo gem >= 1.3.1
+
+
+* Can no longer set Mongoo.config = {...}
+
+  Set Mongoo.conn and Mongoo.db_name instead (more flexibility):
+
+    Mongoo.conn    = Mongo::Connection.new("localhost", 27017, :pool_size => 5, :timeout => 5)
+    Mongoo.db_name = "mongoo-test"
+
+  You can set these on a model level as well:
+
+    Person.conn    = Mongo::Connection.new("localhost", 30000, :pool_size => 5, :timeout => 5)
+    Person.db_name = "mongoo-test"
+
+
+* You can optionally set the collection name on a model now:
+
+  class Person < Mongoo::Base
+    collection_name "spacemen"
+  end

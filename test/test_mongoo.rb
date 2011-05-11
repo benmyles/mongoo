@@ -50,7 +50,7 @@ class TestMongoo < Test::Unit::TestCase
     p = Person.new("name" => "Ben")
     p.jobs.internships.high_school = ["Sun Microsystems"]
     p.insert
-  
+
     p = Person.find_one(p.id)
     p.update
     p.location.city = "San Francisco"
@@ -59,30 +59,30 @@ class TestMongoo < Test::Unit::TestCase
     p.location.city = "San Diego"
     assert_not_equal p.persisted_mongohash.raw_hash, p.mongohash.raw_hash
     p.update
-  
+
     p2 = Person.find_one(p.id)
     assert_equal "Ben Myles", p2.name
     assert_equal "San Diego", p2.location.city
-  
+
     p.location.city = "Los Angeles"
     p.update!
-  
+
     p2.location.city = "San Jose"
     assert_raise(Mongoo::StaleUpdateError) { p2.update! }
     p2.location.city = "San Diego"
     p2.name = "Benjamin"
     p2.update!
-  
+
     assert p2.reload
-  
+
     assert_equal "Los Angeles", p2.location.city
     assert_equal "Benjamin", p2.name
-  
+
     assert p2.persisted_mongohash.raw_hash["location"].has_key?("city")
     p2.unset "location.city"
     p2.update
     assert !p2.persisted_mongohash.raw_hash["location"].has_key?("city")
-  
+
     p2.location.demographics.crime_rate = :high
     p2.location.city = "San Bruno"
     p2.update
@@ -92,7 +92,7 @@ class TestMongoo < Test::Unit::TestCase
     p2.update
     p2 = Person.find_one(p2.id)
     assert !p2.persisted_mongohash.raw_hash.has_key?("location")
-  
+
     p2.location.city = "Brisbane"
     p2.location.demographics.crime_rate = :low
     p2.update
@@ -104,7 +104,7 @@ class TestMongoo < Test::Unit::TestCase
     assert !p2.persisted_mongohash.raw_hash.has_key?("location")
     p2 = Person.find_one(p2.id)
     assert !p2.persisted_mongohash.raw_hash.has_key?("location")
-  
+
     p2.location.city = "Brisbane"
     p2.location.demographics.crime_rate = :low
     p2.update
@@ -140,7 +140,7 @@ class TestMongoo < Test::Unit::TestCase
     assert_equal 15, p.jobs.total
     p = Person.find_one(p.id)
     assert_equal 15, p.jobs.total
-  
+
     assert_equal nil, p.interests
     p.mod! { |mod| mod.push("interests", "skydiving") }
     assert_equal ["skydiving"], p.interests
@@ -150,25 +150,25 @@ class TestMongoo < Test::Unit::TestCase
     assert_equal ["skydiving", "snowboarding"], p.interests
     p = Person.find_one(p.id)
     assert_equal ["skydiving", "snowboarding"], p.interests
-  
+
     p.mod! { |mod| mod.push_all("interests", ["reading","travelling"]) }
     assert_equal ["skydiving", "snowboarding", "reading", "travelling"], p.interests
     p = Person.find_one(p.id)
     assert_equal ["skydiving", "snowboarding", "reading", "travelling"], p.interests
-  
+
     p.mod! { |mod| mod.add_to_set("interests", "skydiving") }
     assert_equal ["skydiving", "snowboarding", "reading", "travelling"], p.interests
     p.mod! { |mod| mod.add_to_set("interests", "swimming") }
     assert_equal ["skydiving", "snowboarding", "reading", "travelling", "swimming"], p.interests
     p.mod! { |mod| mod.add_to_set("interests", "swimming") }
     assert_equal ["skydiving", "snowboarding", "reading", "travelling", "swimming"], p.interests
-  
+
     p.mod! { |mod| mod.pop("interests") }
     assert_equal ["skydiving", "snowboarding", "reading", "travelling"], p.interests
-  
+
     p.mod! { |mod| mod.pop("interests") }
     assert_equal ["skydiving", "snowboarding", "reading"], p.interests
-  
+
     p.mod! { |mod| mod.push("interests", "reading") }
     assert_equal ["skydiving", "snowboarding", "reading", "reading"], p.interests
     p = Person.find_one(p.id)
@@ -182,7 +182,7 @@ class TestMongoo < Test::Unit::TestCase
     assert_equal ["skydiving", "snowboarding", "reading", "travelling"], p.interests
     p = Person.find_one(p.id)
     assert_equal ["skydiving", "snowboarding", "reading", "travelling"], p.interests
-  
+
     p.mod! { |mod| mod.pull_all("interests", ["reading", "skydiving"]) }
     assert_equal ["snowboarding", "travelling"], p.interests
     p = Person.find_one(p.id)
@@ -271,6 +271,31 @@ class TestMongoo < Test::Unit::TestCase
     i.insert!
     i.terms << "foo"
     i.update!
+  end
+
+  should "work when forked" do
+    Person.new(:name => "Ben").insert!
+    fork { assert_equal "Ben", Person.find_one({name: "Ben"}).name }
+    Process.wait
+  end
+
+  should "work when threaded" do
+    1.upto(10) do |i|
+      Person.new(:name => "Ben#{i}").insert!
+    end
+
+    threads = []
+    100.times do |count|
+      threads << Thread.new do
+        (1..10).to_a.shuffle { |i| assert_equal "Ben#{i}", Person.find_one({name: "Ben#{i}"}).name }
+      end
+    end
+    threads.each { |th| th.join }
+  end
+
+  should "be able to set the collection name manually" do
+    assert_equal "people", Person.collection.name
+    assert_equal "spacemen", SpacePerson.collection.name
   end
 end
 

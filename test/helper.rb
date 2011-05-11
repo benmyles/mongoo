@@ -20,7 +20,9 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'mongoo'
 
-Mongoo.config = {host: "127.0.0.1", port: 27017, db: 'mongoo-test'}
+#Mongoo.config = {host: "127.0.0.1", port: 27017, db: 'mongoo-test'}
+Mongoo.conn    = Mongo::Connection.new("localhost", 27017, :pool_size => 5, :timeout => 5)
+Mongoo.db_name = "mongoo-test"
 
 class SearchIndex < Mongoo::Base
   attribute "terms", :type => :array
@@ -39,9 +41,13 @@ class Person < Mongoo::Base
   attribute "location.demographics.crime_rate", :type => :symbol
   attribute "location.demographics.education_quality", :type => :symbol
   attribute "misc", :type => :hash
-  
+
   index "name"
   index "location.city"
+end
+
+class SpacePerson < Mongoo::Base
+  collection_name "spacemen"
 end
 
 class TvShow < Mongoo::Base
@@ -50,9 +56,9 @@ class TvShow < Mongoo::Base
   attribute "cast.lead", :type => :string
   attribute "rating", :type => :float
   attribute "comments", :type => :array
-  
+
   index "name"
-  
+
   validates_presence_of "name"
   validates_presence_of "cast.director"
   validates_presence_of "rating"

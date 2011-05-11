@@ -6,95 +6,102 @@ module Mongoo
   class UpdateError < Exception; end
   class RemoveError < Exception; end
   class NotValidError < Exception; end
-  
+
+  class DbNameNotSet < Exception; end
+  class ConnNotSet < Exception; end
+
   module Persistence
-    
+
     def self.included(base)
       base.extend(ClassMethods)
     end
-    
-    module ClassMethods      
-      def collection_name
-        @collection_name ||= self.model_name.tableize
+
+    module ClassMethods
+      def collection_name(val=nil)
+        if val
+          @collection_name = val
+          @collection = nil
+          @collection_name
+        else
+          @collection_name ||= self.model_name.tableize
+        end
       end
-      
+
       def collection
         @collection ||= db.collection(collection_name)
       end
-      
+
       def conn
         @conn ||= begin
-          if Mongoo.config == config
-            Mongoo.conn
-          else
-            Mongo::Connection.new(config[:host], config[:port], config[:opts])
-          end
+          Mongoo.conn || raise(Mongoo::ConnNotSet)
         end
       end
-      
+
+      def conn=(conn)
+        @conn       = conn
+        @db         = nil
+        @collection = nil
+        @conn
+      end
+
       def db
-        @db ||= begin
-          if Mongoo.config == config
-            Mongoo.db
-          else
-            conn.db(config[:db])
-          end
+        @db ||= conn.db(db_name)
+      end
+
+      def db_name
+        @db_name ||= begin
+          Mongoo.db_name || raise(Mongoo::DbNameNotSet)
         end
       end
-      
-      def config=(cfg)
-        @config = cfg
+
+      def db_name=(db_name)
+        @db_name    = db_name
+        @db         = nil
+        @collection = nil
+        @db_name
       end
-      
-      def config
-        @config || Mongoo.config
-      end
-      
-      def db=(db)
-        @db = db
-      end
-      
+
       def find(query={}, opts={})
         Mongoo::Cursor.new(self, collection.find(query, opts))
       end
-      
+
       def find_one(query={}, opts={})
         return nil unless doc = collection.find_one(query, opts)
         new(doc, true)
       end
-      
+
       def all
         find
       end
-      
+
       def each
         find.each { |found| yield(found) }
       end
-      
+
       def first
         find.limit(1).next_document
       end
-      
+
       def empty?
         count == 0
       end
-      
+
       def count
         collection.count
       end
-      
+
       def drop
         collection.drop
       end
-      
+
       def index_meta
         Mongoo::INDEX_META[self.collection_name] ||= {}
       end
-      
+
       def index(spec, opts={})
         self.index_meta[spec] = opts
       end
-      
+
       def create_indexes
         self.index_meta.each do |spec, opts|
           opts[:background] = true if !opts.has_key?(:background)
@@ -102,28 +109,28 @@ module Mongoo
         end; true
       end
     end # ClassMethods
-        
+
     def to_param
       persisted? ? get("_id").to_s : nil
     end
-    
+
     def to_key
       get("_id")
     end
-    
+
     def to_model
       self
     end
-    
+
     def persisted?
       @persisted == true
       #!get("_id").nil?
     end
-    
+
     def collection
       self.class.collection
     end
-    
+
     def insert(opts={})
       _run_insert_callbacks do
         if persisted?
@@ -146,11 +153,11 @@ module Mongoo
         ret
       end
     end
-    
+
     def insert!(opts={})
       insert(opts.merge(:safe => true))
     end
-    
+
     def update(opts={})
       _run_update_callbacks do
         unless persisted?
@@ -185,19 +192,19 @@ module Mongoo
         end
       end
     end
-    
+
     def update!(opts={})
       update(opts.merge(:safe => true))
     end
-    
+
     def destroyed?
       @destroyed != nil
     end
-    
+
     def new_record?
       !persisted?
     end
-    
+
     def remove(opts={})
       _run_remove_callbacks do
         unless persisted?
@@ -213,18 +220,18 @@ module Mongoo
         end
       end
     end
-    
+
     def remove!(opts={})
       remove(opts.merge(:safe => true))
     end
-    
+
     def reload
       init_from_hash(collection.find_one(get("_id")))
       @persisted = true
       set_persisted_mongohash(mongohash.deep_clone)
       true
     end
-    
+
     def build_update_hash(changelog)
       update_hash = {}
       changelog.each do |op, k, v|
@@ -234,7 +241,7 @@ module Mongoo
       update_hash
     end
     protected :build_update_hash
-    
+
     def build_update_query_hash(persisted_mongohash_kv, changelog)
       update_query_hash = {}
       changelog.each do |op, k, v|
@@ -251,6 +258,6 @@ module Mongoo
       update_query_hash
     end
     protected :build_update_query_hash
-    
+
   end
 end
