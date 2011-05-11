@@ -20,9 +20,9 @@
 
 * You can optionally set the collection name on a model now:
 
-  class Person < Mongoo::Base
-    collection_name "spacemen"
-  end
+    class Person < Mongoo::Base
+      collection_name "spacemen"
+    end
 
 
 * There is a new Identity Map feature available. It will only work when using find_one to
