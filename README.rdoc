@@ -1,9 +1,49 @@
 = mongoo
 
-Description goes here.
+== Changelog
+
+=== 0.2.0
+
+* Depends on mongo gem >= 1.3.1
+
+
+* Can no longer set Mongoo.config = {...}
+
+  Set Mongoo.conn and Mongoo.db_name instead (more flexibility):
+
+    Mongoo.conn    = Mongo::Connection.new("localhost", 27017, :pool_size => 5, :timeout => 5)
+    Mongoo.db_name = "mongoo-test"
+
+  You can set these on a model level as well:
+
+    Person.conn    = Mongo::Connection.new("localhost", 30000, :pool_size => 5, :timeout => 5)
+    Person.db_name = "mongoo-test"
+
+
+* You can optionally set the collection name on a model now:
+
+  class Person < Mongoo::Base
+    collection_name "spacemen"
+  end
+
+
+* There is a new Identity Map feature available. It will only work when using find_one to
+  find a specific id. You need to manually turn it on:
+
+    Mongoo::IdentityMap.on!
+
+  If using it in a web application like Rails be sure to flush the map after each request:
+
+    Mongoo::IdentityMap.flush!
+
+  The map is scoped to the current thread or fiber. You can also turn the map back off:
+
+    Mongoo::IdentityMap.off!
+
+  Inspired by: http://railstips.org/blog/archives/2010/02/21/mongomapper-07-identity-map/
 
 == Contributing to mongoo
- 
+
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it
 * Fork the project
