@@ -66,8 +66,22 @@ module Mongoo
       end
 
       def find_one(query={}, opts={})
-        return nil unless doc = collection.find_one(query, opts)
-        new(doc, true)
+        id_map_on = Mongoo::IdentityMap.on?
+        is_simple_query = Mongoo::IdentityMap.simple_query?(query, opts)
+
+        if id_map_on && is_simple_query
+          if doc = Mongoo::IdentityMap.read(query)
+            return doc
+          end
+        end
+
+        if doc = collection.find_one(query, opts)
+          doc = new(doc, true)
+          Mongoo::IdentityMap.write(doc) if id_map_on && is_simple_query
+          doc
+        else
+          nil
+        end
       end
 
       def all
