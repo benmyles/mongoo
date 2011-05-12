@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{mongoo}
-  s.version = "0.2.1"
+  s.version = "0.2.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ben Myles"]
@@ -52,6 +52,7 @@ Gem::Specification.new do |s|
   s.test_files = [
     "test/helper.rb",
     "test/test_activemodel.rb",
+    "test/test_async.rb",
     "test/test_identity_map.rb",
     "test/test_mongohash.rb",
     "test/test_mongoo.rb"

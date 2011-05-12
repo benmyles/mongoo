@@ -1,41 +1,36 @@
-if ENV["MONGOO_ASYNC"] == "1" || (ENV["MONGOO_SYNC"] != "1" && (defined?(EM) && EM.reactor_running?))
-  require "em-synchrony"
-  require "em-synchrony/tcpsocket"
-  module Mongo
-    class Connection
-      EMTCPSocket = ::EventMachine::Synchrony::TCPSocket
+require "em-synchrony"
+require "em-synchrony/tcpsocket"
 
-      def check_is_master(node)
-        begin
-          host, port = *node
-          socket = EMTCPSocket.new(host, port)
-          socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
-
-          config = self['admin'].command({:ismaster => 1}, :socket => socket)
-        rescue OperationFailure, SocketError, SystemCallError, IOError => ex
-          close
-        ensure
-          socket.close if socket
-        end
-
-        config
-      end
-    end
+module Mongoo
+  def self.suppress_warnings
+    original_verbosity = $VERBOSE
+    $VERBOSE = nil
+    result = yield
+    $VERBOSE = original_verbosity
+    return result
   end
+end
 
-  module Mongoo
-    def self.mode
-      :async
-    end
+module Mongoo
+  def self.mode
+    :async
   end
+end
 
-  puts "* Mongoo Running in Asynchronous Mode" if ENV["MONGOO_DEBUG"] == "1"
-else
-  module Mongoo
-    def self.mode
-      :sync
-    end
+module Mongo
+  class Pool
+    Mongoo.suppress_warnings { TCPSocket = ::EventMachine::Synchrony::TCPSocket }
   end
-  
-  puts "* Mongoo Running in Synchronous Mode" if ENV["MONGOO_DEBUG"] == "1"
+end
+
+module Mongo
+  class Connection
+    Mongoo.suppress_warnings { TCPSocket = ::EventMachine::Synchrony::TCPSocket }
+  end
+end
+
+if ENV["MONGOO_DEBUG"] == "1"
+  puts "* Mongoo Running in Asynchronous Mode"
+  puts "  ==> Mongo::Pool::TCPSocket: #{Mongo::Pool::TCPSocket.to_s}"
+  puts "  ==> Mongo::Connection::TCPSocket: #{Mongo::Pool::TCPSocket.to_s}"
 end

@@ -2,6 +2,16 @@
 
 == Changelog
 
+=== 0.2.2
+
+* async mode works again, but now you have to manually require:
+
+    require "mongoo/async"
+    Mongoo.conn    = Mongo::Connection.new("localhost", 27017, :pool_size => 5, :timeout => 5)
+    Mongoo.db_name = "mongoo-test"
+
+  see test_async.rb for an example.
+
 === 0.2.1
 
 * Identity Map now also stores results from find.to_a, find.each and find.next

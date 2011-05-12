@@ -4,13 +4,15 @@ module Mongoo
 
   class << self
     attr_accessor :conn, :db_name, :verbose_debug
+
+    def mode
+      :sync
+    end
   end
 end
 
 require "forwardable"
 require "mongo"
-
-require "mongoo/async"
 
 require "active_support/core_ext"
 require "active_model"
