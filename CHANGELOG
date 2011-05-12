@@ -1,12 +1,12 @@
 == Changelog
 
-=== 0.2.2
+=== 0.2.4
 
 * async mode works again, but now you have to manually require:
 
     require "mongoo/async"
-    Mongoo.conn    = Mongo::Connection.new("localhost", 27017, :pool_size => 5, :timeout => 5)
-    Mongoo.db_name = "mongoo-test"
+    Mongoo.conn_opts = ["localhost", 27017, :pool_size => 5, :timeout => 5]
+    Mongoo.db_name   = "mongoo-test"
 
   see test_async.rb for an example.
 
@@ -21,10 +21,10 @@
 
 * Can no longer set Mongoo.config = {...}
 
-  Set Mongoo.conn and Mongoo.db_name instead (more flexibility):
+  Set Mongoo.conn_opts and Mongoo.db_name instead (more flexibility):
 
-    Mongoo.conn    = Mongo::Connection.new("localhost", 27017, :pool_size => 5, :timeout => 5)
-    Mongoo.db_name = "mongoo-test"
+    Mongoo.conn_opts = ["localhost", 27017, :pool_size => 5, :timeout => 5]
+    Mongoo.db_name   = "mongoo-test"
 
   You can set these on a model level as well:
 
