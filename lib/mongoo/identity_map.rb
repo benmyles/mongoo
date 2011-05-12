@@ -30,6 +30,7 @@ module Mongoo
       end
 
       def simple_query?(query, opts)
+        return false if query.nil?
         return false unless opts.blank?
         return true if query.is_a?(BSON::ObjectId)
         return true if [[:_id], ["_id"]].include?(query.keys)

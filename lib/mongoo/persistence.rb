@@ -67,7 +67,8 @@ module Mongoo
 
       def find_one(query={}, opts={})
         id_map_on = Mongoo::IdentityMap.on?
-        is_simple_query = Mongoo::IdentityMap.simple_query?(query, opts)
+        is_simple_query = nil
+        is_simple_query = Mongoo::IdentityMap.simple_query?(query, opts) if id_map_on
 
         if id_map_on && is_simple_query
           if doc = Mongoo::IdentityMap.read(query)
