@@ -21,8 +21,8 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'mongoo'
 
-Mongoo.conn    = Mongo::Connection.new("localhost", 27017, :pool_size => 5, :timeout => 5)
-Mongoo.db_name = "mongoo-test"
+Mongoo.conn_opts = ["localhost", 27017, :pool_size => 5, :timeout => 5]
+Mongoo.db_name   = "mongoo-test"
 
 class SearchIndex < Mongoo::Base
   attribute "terms", :type => :array

@@ -3,7 +3,27 @@ module Mongoo
   ATTRIBUTE_META = {}
 
   class << self
-    attr_accessor :conn, :db_name, :verbose_debug
+    attr_accessor :conn_opts, :db_name, :verbose_debug
+
+    def conn
+      Thread.current[:mongoo] ||= {}
+      Thread.current[:mongoo][:conn] ||= Mongo::Connection.new(*conn_opts)
+    end
+
+    def db
+      Thread.current[:mongoo] ||= {}
+      Thread.current[:mongoo][:db] ||= conn.db(db_name)
+    end
+
+    def reset_connection!
+      if Thread.current[:mongoo]
+        Thread.current[:mongoo][:db] = nil
+        if Thread.current[:mongoo][:conn]
+          Thread.current[:mongoo][:conn].close
+          Thread.current[:mongoo][:conn] = nil
+        end
+      end; true
+    end
 
     def mode
       :sync

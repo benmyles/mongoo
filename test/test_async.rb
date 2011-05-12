@@ -3,12 +3,13 @@ if ENV["MONGOO_ASYNC"]
 require 'helper'
 require "mongoo/async"
 
+Mongoo.conn_opts = ["localhost", 27017, :pool_size => 5, :timeout => 5]
+Mongoo.db_name   = "mongoo-test"
+
 class TestAsync < Test::Unit::TestCase
 
   def setup
     EM.synchrony do
-      Mongoo.conn    = Mongo::Connection.new("localhost", 27017, :pool_size => 5, :timeout => 5)
-      Mongoo.db_name = "mongoo-test"
 
       [Person, TvShow, SearchIndex].each do |obj|
         obj.drop

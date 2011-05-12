@@ -20,45 +20,25 @@ module Mongoo
       def collection_name(val=nil)
         if val
           @collection_name = val
-          @collection = nil
-          @collection_name
         else
           @collection_name ||= self.model_name.tableize
         end
       end
 
       def collection
-        @collection ||= db.collection(collection_name)
+        db.collection(collection_name)
       end
 
       def conn
-        @conn ||= begin
-          Mongoo.conn || raise(Mongoo::ConnNotSet)
-        end
-      end
-
-      def conn=(conn)
-        @conn       = conn
-        @db         = nil
-        @collection = nil
-        @conn
+        Mongoo.conn
       end
 
       def db
-        @db ||= conn.db(db_name)
+        Mongoo.db
       end
 
       def db_name
-        @db_name ||= begin
-          Mongoo.db_name || raise(Mongoo::DbNameNotSet)
-        end
-      end
-
-      def db_name=(db_name)
-        @db_name    = db_name
-        @db         = nil
-        @collection = nil
-        @db_name
+        Mongoo.db_name
       end
 
       def find(query={}, opts={})

@@ -12,20 +12,55 @@ module Mongoo
 end
 
 module Mongoo
+  class FakeMutex
+    def initialize
+    end
+
+    def synchronize
+      yield
+    end
+
+    def lock
+      true
+    end
+
+    def locked?
+      false
+    end
+
+    def sleep(timeout=nil)
+      true
+    end
+
+    def try_lock
+      true
+    end
+
+    def unlock
+      true
+    end
+  end
+end
+
+Mongoo.suppress_warnings do
+  module Mongo
+    class Connection
+      Mutex = Mongoo::FakeMutex
+      TCPSocket = TCPSocket = ::EventMachine::Synchrony::TCPSocket
+    end
+  end
+
+  module Mongo
+    class Pool
+      Mutex = Mongoo::FakeMutex
+      TCPSocket = TCPSocket = ::EventMachine::Synchrony::TCPSocket
+    end
+  end
+end
+
+module Mongoo
   def self.mode
     :async
-  end
-end
-
-module Mongo
-  class Pool
-    Mongoo.suppress_warnings { TCPSocket = ::EventMachine::Synchrony::TCPSocket }
-  end
-end
-
-module Mongo
-  class Connection
-    Mongoo.suppress_warnings { TCPSocket = ::EventMachine::Synchrony::TCPSocket }
   end
 end
 
