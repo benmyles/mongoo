@@ -1,3 +1,7 @@
+unless defined?(Mongo)
+  require "mongo"
+end
+
 module Mongoo
   INDEX_META = {}
   ATTRIBUTE_META = {}
@@ -6,33 +10,25 @@ module Mongoo
     attr_accessor :conn_opts, :db_name, :verbose_debug
 
     def conn
-      Thread.current[:mongoo] ||= {}
-      Thread.current[:mongoo][:conn] ||= Mongo::Connection.new(*conn_opts)
+      @conn ||= Mongo::Connection.new(*conn_opts)
     end
 
     def db
-      Thread.current[:mongoo] ||= {}
-      Thread.current[:mongoo][:db] ||= conn.db(db_name)
+      @db ||= conn.db(db_name)
     end
 
     def reset_connection!
-      if Thread.current[:mongoo]
-        Thread.current[:mongoo][:db] = nil
-        if Thread.current[:mongoo][:conn]
-          Thread.current[:mongoo][:conn].close
-          Thread.current[:mongoo][:conn] = nil
-        end
-      end; true
+      @conn.close if @conn
+      @conn = nil
     end
 
     def mode
-      :sync
+      Mongo.em? ? :async : :sync
     end
   end
 end
 
 require "forwardable"
-require "mongo"
 
 require "active_support/core_ext"
 require "active_model"
