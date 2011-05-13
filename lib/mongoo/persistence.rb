@@ -26,19 +26,7 @@ module Mongoo
       end
 
       def collection
-        db.collection(collection_name)
-      end
-
-      def conn
-        Mongoo.conn
-      end
-
-      def db
-        Mongoo.db
-      end
-
-      def db_name
-        Mongoo.db_name
+        @collection ||= Mongoo.db.collection(collection_name)
       end
 
       def find(query={}, opts={})

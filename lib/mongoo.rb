@@ -7,19 +7,10 @@ module Mongoo
   ATTRIBUTE_META = {}
 
   class << self
-    attr_accessor :conn_opts, :db_name, :verbose_debug
-
-    def conn
-      @conn ||= Mongo::Connection.new(*conn_opts)
-    end
+    attr_accessor :verbose_debug, :db_name, :conn
 
     def db
       @db ||= conn.db(db_name)
-    end
-
-    def reset_connection!
-      @conn.close if @conn
-      @conn = nil
     end
 
     def mode
