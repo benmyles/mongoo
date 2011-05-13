@@ -2,19 +2,40 @@ unless defined?(Mongo)
   require "mongo"
 end
 
+# Mongoo.conn = lambda { Mongo::Connection.new("localhost", 27017, :pool_size => 5, :timeout => 5) }
+# Mongoo.db   = "mydb"
+# Mongoo.conn => #<Mongo::Connection:0x00000100db8ac0>
+
 module Mongoo
   INDEX_META = {}
   ATTRIBUTE_META = {}
 
   class << self
-    attr_accessor :verbose_debug, :db_name, :conn
+    attr_accessor :verbose_debug
 
-    def db
-      @db ||= conn.db(db_name)
+    def conn=(conn_lambda)
+      @conn_lambda = conn_lambda
+      @_conn = nil
+      @_db = nil
+      @conn_lambda
     end
 
-    def mode
-      Mongo.em? ? :async : :sync
+    def db=(db_name)
+      @db_name = db_name
+      @_db = nil
+      @db_name
+    end
+
+    def conn
+      @_conn ||= (@conn_lambda && @conn_lambda.call)
+    end
+
+    def db
+      @_db ||= (conn && conn.db(@db_name))
+    end
+
+    def async?
+      Mongo.async?
     end
   end
 end

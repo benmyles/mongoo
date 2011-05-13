@@ -9,6 +9,46 @@ class TestMongoo < Test::Unit::TestCase
     end
   end
 
+  should "be able to use a different db for each model" do
+    assert_equal "mongoo-test", Mongoo.db.name
+    assert_equal "mongoo-test", Person.db.name
+
+    Person.new(name: "mongoo-test").insert!
+    assert_equal 1, Person.count
+    assert_equal "mongoo-test", Person.find.next.name
+
+    Person.db = "mongoo-test-people"
+    assert_equal "mongoo-test-people", Person.db.name
+
+    assert_equal 0, Person.count
+    assert_equal 1, Mongoo.db.collection("people").count
+
+    Person.new(name: "mongoo-test-people").insert!
+    assert_equal 1, Person.count
+    assert_equal "mongoo-test-people", Person.find.next.name
+
+    Person.collection.drop
+    Person.db = nil
+    Person.conn = nil
+
+    assert_equal 1, Person.count
+    assert_equal "mongoo-test", Person.find.next.name
+  end
+
+  should "be able to use a different connection for each model" do
+    assert_equal Person.conn.object_id, Mongoo.conn.object_id
+    assert_equal Person.collection.db.connection.object_id, Mongoo.conn.object_id
+    Person.conn = lambda { Mongo::Connection.new("localhost", 27017, :pool_size => 5, :timeout => 5) }
+    assert_not_equal Person.conn.object_id, Mongoo.conn.object_id
+
+    assert_not_equal Person.collection.db.connection.object_id, Mongoo.conn.object_id
+
+    assert_equal Person.collection.db.connection.object_id, Person.conn.object_id
+    Person.conn = nil
+    assert_equal Person.conn.object_id, Mongoo.conn.object_id
+    assert_equal Person.collection.db.connection.object_id, Mongoo.conn.object_id
+  end
+
   should "set and get attributes" do
     p = Person.new("name" => "Ben")
     assert_equal "Ben", p.g(:name)

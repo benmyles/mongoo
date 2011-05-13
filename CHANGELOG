@@ -1,5 +1,9 @@
 == Changelog
 
+=== 0.3.0
+
+* refactored a bunch of connection and async related stuff. see README
+
 === 0.2.4
 
 * async mode works again, but now you have to manually require:

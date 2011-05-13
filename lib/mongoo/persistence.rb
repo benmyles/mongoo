@@ -25,8 +25,37 @@ module Mongoo
         end
       end
 
+      def conn=(conn_lambda)
+        @conn_lambda = conn_lambda
+        @_conn = nil
+        @_db = nil
+        @collection = nil
+        @conn_lambda
+      end
+
+      def db=(db_name)
+        @db_name = db_name
+        @_db = nil
+        @collection = nil
+        @db_name
+      end
+
+      def conn
+        @_conn ||= ((@conn_lambda && @conn_lambda.call) || Mongoo.conn)
+      end
+
+      def db
+        @_db ||= begin
+          if db_name = (@db_name || (@conn_lambda && Mongoo.db.name))
+            conn.db(db_name)
+          else
+            Mongoo.db
+          end
+        end
+      end
+
       def collection
-        @collection ||= Mongoo.db.collection(collection_name)
+        @collection ||= db.collection(collection_name)
       end
 
       def find(query={}, opts={})
