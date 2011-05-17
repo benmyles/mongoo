@@ -16,7 +16,8 @@ module Mongoo
     end
 
     def deep_clone
-      Mongoo::Mongohash.new(Marshal.load(Marshal.dump self.raw_hash))
+      #Mongoo::Mongohash.new(Marshal.load(Marshal.dump self.raw_hash))
+      Mongoo::Mongohash.new(BSON.deserialize(BSON.serialize(self.raw_hash)))
     end
     
     def dot_set(k,v)

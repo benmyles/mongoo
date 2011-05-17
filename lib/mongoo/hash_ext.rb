@@ -1,7 +1,8 @@
 module Mongoo
   module HashExt
     def deep_stringify_keys
-      Marshal.load(Marshal.dump(self)).deep_stringify_keys!
+      #Marshal.load(Marshal.dump(self)).deep_stringify_keys!
+      BSON.deserialize(BSON.serialize(self)).deep_stringify_keys!
     end
     
     def deep_stringify_keys!
