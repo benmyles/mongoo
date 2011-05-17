@@ -187,23 +187,7 @@ module Mongoo
     end
     
     def verify_attributes_in_mongohash(hash)
-      known_keys = self.class.attributes.keys
-      known_keys << "_id"
-      hash.dot_list.each do |k|
-        unless known_keys.include?(k)
-          k.split(".").each do |part|
-            if opts = self.class.attributes[part]
-              if opts[:type] == :hash
-                known_keys << k
-              end
-            end
-          end
-          unless known_keys.include?(k)
-            # this is just annoying.
-            #raise Mongoo::UnknownAttributeError, k.to_s
-          end
-        end
-      end
+      true
     end # verify_attributes_in_mongohash
   end
 end
