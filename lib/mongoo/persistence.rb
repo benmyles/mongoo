@@ -74,11 +74,7 @@ module Mongoo
         end
 
         if doc = collection.find_one(query, opts)
-          doc = new(doc, true)
-          Mongoo::IdentityMap.write(doc) if id_map_on && is_simple_query
-          doc
-        else
-          nil
+          Mongoo::Cursor.new(self, nil).obj_from_doc(doc)
         end
       end
 

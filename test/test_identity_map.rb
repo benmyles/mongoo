@@ -8,6 +8,22 @@ class TestIdentityMap < Test::Unit::TestCase
       obj.create_indexes
     end
   end
+  
+  should "be performant" do
+    1.upto(1000) do |i|
+      p = Person.new("name" => "Ben#{i}")
+      p.insert!
+    end
+    
+    Mongoo::IdentityMap.on!
+    
+    all = Person.find.to_a
+    
+    p = Person.find(name: "Ben5").next
+    assert_equal p.object_id, all[all.index(p)].object_id
+    
+    Mongoo::IdentityMap.off!
+  end
 
   should "set and get attributes" do
     p = Person.new("name" => "Ben")

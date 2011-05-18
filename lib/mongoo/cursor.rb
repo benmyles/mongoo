@@ -11,9 +11,7 @@ module Mongoo
 
     def next_document
       if doc = @mongo_cursor.next_document
-        obj = @obj_class.new(doc, true)
-        Mongoo::IdentityMap.write(obj) if Mongoo::IdentityMap.on?
-        obj
+        obj_from_doc(doc)
       end
     end
 
@@ -21,17 +19,12 @@ module Mongoo
 
     def each
       @mongo_cursor.each do |doc|
-        obj = @obj_class.new(doc, true)
-        Mongoo::IdentityMap.write(obj) if Mongoo::IdentityMap.on?
-        yield obj
+        yield obj_from_doc(doc)
       end
     end
 
     def to_a
-      arr = @mongo_cursor.to_a.collect { |doc| @obj_class.new(doc, true) }
-      if Mongoo::IdentityMap.on?
-        arr.each { |obj| Mongoo::IdentityMap.write(obj) }
-      end; arr
+      @mongo_cursor.to_a.collect { |doc| obj_from_doc(doc) }
     end
 
     def count
@@ -64,6 +57,18 @@ module Mongoo
       else
         super
       end
+    end
+  
+    def obj_from_doc(doc)
+      obj = nil
+      if Mongoo::IdentityMap.on?
+        if obj = Mongoo::IdentityMap.read(doc["_id"])
+          obj.merge!(doc)
+        end
+      end
+      obj ||= @obj_class.new(doc, true)
+      Mongoo::IdentityMap.write(obj) if Mongoo::IdentityMap.on?
+      obj
     end
 
   end

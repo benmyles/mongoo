@@ -48,7 +48,7 @@ module Mongoo
       end
 
       def write(doc)
-        if store
+        if store && !store.has_key?(doc.id.to_s)
           store[doc.id.to_s] = doc
         end
       end
