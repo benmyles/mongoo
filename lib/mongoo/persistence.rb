@@ -59,7 +59,8 @@ module Mongoo
       end
 
       def find(query={}, opts={})
-        Mongoo::Cursor.new(self, collection.find(query, opts))
+        raw = (opts ? opts.delete(:raw) : false)
+        Mongoo::Cursor.new(self, collection.find(query, opts), {raw: raw})
       end
 
       def find_one(query={}, opts={})
@@ -73,8 +74,11 @@ module Mongoo
           end
         end
 
+        raw = (opts ? opts.delete(:raw) : false)
+
         if doc = collection.find_one(query, opts)
-          Mongoo::Cursor.new(self, nil).obj_from_doc(doc)
+          return doc.merge("_mongoo_class" => @obj_class) if opts[:raw]
+          Mongoo::Cursor.new(self, nil, {raw: raw}).obj_from_doc(doc)
         end
       end
 

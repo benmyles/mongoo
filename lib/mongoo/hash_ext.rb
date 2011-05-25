@@ -3,7 +3,7 @@ module Mongoo
     def deep_stringify_keys
       deep_clone.deep_stringify_keys!
     end
-    
+
     def deep_stringify_keys!
       keys.each do |key|
         self[key.to_s] = delete(key)
@@ -13,9 +13,15 @@ module Mongoo
       end
       self
     end
-    
+
     def deep_clone
       Marshal.load(Marshal.dump(self))
+    end
+
+    def to_mongoo
+      if self["_mongoo_class"]
+        self["_mongoo_class"].new(self, true)
+      end
     end
   end
 end
