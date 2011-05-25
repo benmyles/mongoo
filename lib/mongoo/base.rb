@@ -107,7 +107,8 @@ module Mongoo
     alias :g   :get_attribute
     
     def set_attribute(k,v)
-      persisted_mongohash # make sure it is set
+      will_change!
+      
       unless known_attribute?(k)
         if self.respond_to?("#{k}=")
           return self.send("#{k}=", v)
@@ -115,6 +116,7 @@ module Mongoo
           raise UnknownAttributeError, k
         end
       end
+
       unless k.to_s == "_id" || v.nil?
         field_type = self.class.attributes[k.to_s][:type]
         v = Mongoo::AttributeSanitizer.sanitize(field_type, v)
@@ -125,7 +127,8 @@ module Mongoo
     alias :s   :set_attribute
     
     def unset_attribute(k)
-      persisted_mongohash # make sure it is set
+      will_change!
+
       mongohash.dot_delete(k); true
     end
     alias :unset :unset_attribute
@@ -155,7 +158,8 @@ module Mongoo
     end
     
     def merge!(hash)
-      persisted_mongohash # make sure it is set
+      will_change!
+      
       if hash.is_a?(Mongoo::Mongohash)
         hash = hash.raw_hash
       end
