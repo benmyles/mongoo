@@ -70,10 +70,9 @@ module Mongoo
       k == "_id" || self.attributes[k.to_s]
     end
     
-    def initialize(hash={}, persisted=false)
+    def initialize(hash={}, persisted=false, opts={})
       @persisted = persisted
-      init_from_hash(hash)
-      set_persisted_mongohash((persisted? ? mongohash.deep_clone : nil))
+      init_from_hash(hash, opts)
     end
     
     def ==(val)
@@ -84,6 +83,10 @@ module Mongoo
           self.mongohash.raw_hash == val.mongohash.raw_hash
         end
       end
+    end
+    
+    def will_change!
+      persisted_mongohash && true
     end
     
     def known_attribute?(k)
@@ -104,6 +107,7 @@ module Mongoo
     alias :g   :get_attribute
     
     def set_attribute(k,v)
+      persisted_mongohash # make sure it is set
       unless known_attribute?(k)
         if self.respond_to?("#{k}=")
           return self.send("#{k}=", v)
@@ -121,6 +125,7 @@ module Mongoo
     alias :s   :set_attribute
     
     def unset_attribute(k)
+      persisted_mongohash # make sure it is set
       mongohash.dot_delete(k); true
     end
     alias :unset :unset_attribute
@@ -150,6 +155,7 @@ module Mongoo
     end
     
     def merge!(hash)
+      persisted_mongohash # make sure it is set
       if hash.is_a?(Mongoo::Mongohash)
         hash = hash.raw_hash
       end
@@ -159,11 +165,10 @@ module Mongoo
       mongohash
     end
         
-    def init_from_hash(hash)
+    def init_from_hash(hash, opts={})
       unless hash.is_a?(Mongoo::Mongohash)
-        hash = Mongoo::Mongohash.new(hash)
+        hash = Mongoo::Mongohash.new(hash, opts)
       end
-      verify_attributes_in_mongohash(hash)
       set_mongohash hash
     end
     protected :init_from_hash
@@ -183,11 +188,10 @@ module Mongoo
     protected :set_persisted_mongohash
     
     def persisted_mongohash
-      @persisted_mongohash
+      return @persisted_mongohash if @persisted_mongohash
+      if persisted?
+        set_persisted_mongohash(mongohash.deep_clone)
+      end
     end
-    
-    def verify_attributes_in_mongohash(hash)
-      true
-    end # verify_attributes_in_mongohash
   end
 end

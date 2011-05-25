@@ -28,7 +28,7 @@ class TestPerformance < Test::Unit::TestCase
 
     t1 = Time.now.utc.to_f
     PerfTools::CpuProfiler.start("/tmp/mongoo_test_performance") do
-      1000.times do |i|
+      2000.times do |i|
         Person.find_one(p.id)
       end
     end
@@ -58,7 +58,7 @@ class TestPerformance < Test::Unit::TestCase
 
     t1 = Time.now.utc.to_f
     PerfTools::CpuProfiler.start("/tmp/mongoo_test_performance") do
-      1000.times do |i|
+      2000.times do |i|
         Person.find_one(p.id, {raw: true})
       end
     end
