@@ -69,7 +69,7 @@ module Mongoo
           obj.merge!(doc)
         end
       end
-      obj ||= @obj_class.new(doc, true, { trusted: true })
+      obj ||= @obj_class.new(doc, true)
       Mongoo::IdentityMap.write(obj) if Mongoo::IdentityMap.on?
       obj
     end

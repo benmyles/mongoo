@@ -10,9 +10,9 @@ module Mongoo
     
     attr_reader :raw_hash
     
-    def initialize(hash={}, opts={})
+    def initialize(hash={})
       hash = hash.to_hash unless hash.class.to_s == "Hash"
-      @raw_hash = opts[:trusted] == true ? hash : hash.deep_stringify_keys
+      @raw_hash = hash.deep_stringify_keys
     end
 
     def deep_clone

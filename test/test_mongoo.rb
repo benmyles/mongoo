@@ -246,7 +246,6 @@ class TestMongoo < Test::Unit::TestCase
     assert_equal({ "height" => 5.5, "weight" => 160 }, p.misc)
     p.update!
     p = Person.find_one(p.id)
-    p.will_change!
     assert_equal({ "height" => 5.5, "weight" => 160 }, p.misc)
     p.misc["height"] = 5.6
     p.misc["eyes"] = :blue
