@@ -4,10 +4,9 @@ module Mongoo
 
     attr_accessor :mongo_cursor
 
-    def initialize(obj_class, mongo_cursor, opts={})
+    def initialize(obj_class, mongo_cursor)
       @obj_class    = obj_class
       @mongo_cursor = mongo_cursor
-      @opts         = opts
     end
 
     def next_document
@@ -59,10 +58,8 @@ module Mongoo
         super
       end
     end
-
+  
     def obj_from_doc(doc)
-      return doc.merge("_mongoo_class" => @obj_class) if @opts && @opts[:raw]
-
       obj = nil
       if Mongoo::IdentityMap.on?
         if obj = Mongoo::IdentityMap.read(doc["_id"])
