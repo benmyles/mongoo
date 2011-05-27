@@ -1,9 +1,6 @@
 module Mongoo
   module HashExt
-    def deep_stringify_keys
-      deep_clone.deep_stringify_keys!
-    end
-    
+
     def deep_stringify_keys!
       keys.each do |key|
         self[key.to_s] = delete(key)
@@ -13,10 +10,7 @@ module Mongoo
       end
       self
     end
-    
-    def deep_clone
-      Marshal.load(Marshal.dump(self))
-    end
+
   end
 end
 

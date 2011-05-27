@@ -151,13 +151,13 @@ module Mongoo
             return false
           end
         end
-        ret = self.collection.insert(mongohash.deep_clone, opts)
+        ret = self.collection.insert(mongohash, opts)
         unless ret.is_a?(BSON::ObjectId)
           raise InsertError, "not an object: #{ret.inspect}"
         end
         set("_id", ret)
         @persisted = true
-        set_persisted_mongohash(mongohash.deep_clone)
+        set_persisted_mongohash(mongohash)
         ret
       end
       Mongoo::IdentityMap.write(self) if Mongoo::IdentityMap.on?
@@ -190,7 +190,7 @@ module Mongoo
         end
         ret = self.collection.update(update_query_hash.merge({"_id" => get("_id")}), update_hash, opts)
         if !ret.is_a?(Hash) || (ret["updatedExisting"] && ret["n"] == 1)
-          set_persisted_mongohash(mongohash.deep_clone)
+          set_persisted_mongohash(mongohash)
           @persisted = true
           true
         else
@@ -238,7 +238,7 @@ module Mongoo
     def reload
       init_from_hash(collection.find_one(get("_id")))
       @persisted = true
-      set_persisted_mongohash(mongohash.deep_clone)
+      set_persisted_mongohash(mongohash)
       true
     end
 

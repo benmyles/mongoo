@@ -1,18 +1,19 @@
 == Changelog
 
+=== 0.4.0
+
+* Reverted 0.3.2 and replaced with better, more compatible improvements.
+  Major speed increases are still here but it works as it did before.
+
+=== 0.3.2
+
+* implemented some optimizations that provide some major speed improvements
+  for instantiating Mongoo::Base objects. Also added a :raw => true option
+  to finds so that you can get back a raw hash.
+
 === 0.3.0
 
 * refactored a bunch of connection and async related stuff. see README
-
-=== 0.2.4
-
-* async mode works again, but now you have to manually require:
-
-    require "mongoo/async"
-    Mongoo.conn_opts = ["localhost", 27017, :pool_size => 5, :timeout => 5]
-    Mongoo.db_name   = "mongoo-test"
-
-  see test_async.rb for an example.
 
 === 0.2.1
 
@@ -25,23 +26,11 @@
 
 * Can no longer set Mongoo.config = {...}
 
-  Set Mongoo.conn_opts and Mongoo.db_name instead (more flexibility):
-
-    Mongoo.conn_opts = ["localhost", 27017, :pool_size => 5, :timeout => 5]
-    Mongoo.db_name   = "mongoo-test"
-
-  You can set these on a model level as well:
-
-    Person.conn    = Mongo::Connection.new("localhost", 30000, :pool_size => 5, :timeout => 5)
-    Person.db_name = "mongoo-test"
-
-
 * You can optionally set the collection name on a model now:
 
     class Person < Mongoo::Base
       collection_name "spacemen"
     end
-
 
 * There is a new Identity Map feature available. It will only work when using find_one to
   find a specific id. You need to manually turn it on:
