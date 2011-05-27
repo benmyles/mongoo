@@ -1,11 +1,5 @@
 == Changelog
 
-=== 0.3.2
-
-* implemented some optimizations that provide some major speed improvements
-  for instantiating Mongoo::Base objects. Also added a :raw => true option
-  to finds so that you can get back a raw hash.
-
 === 0.3.0
 
 * refactored a bunch of connection and async related stuff. see README
