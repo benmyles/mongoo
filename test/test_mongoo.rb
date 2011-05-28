@@ -337,5 +337,19 @@ class TestMongoo < Test::Unit::TestCase
     assert_equal "people", Person.collection.name
     assert_equal "spacemen", SpacePerson.collection.name
   end
+
+  should "be able to use find_and_modify" do
+    p = Person.new(name: "Ben", interests: ["skydiving", "coding"])
+    p.insert!
+    p2 = Person.find_and_modify({
+      query: { name: "Ben" },
+      update: { "$push" => { "interests" => "swimming" } },
+      new: true
+    })
+    assert_equal ["skydiving", "coding", "swimming"], p2.interests
+    assert_equal ["skydiving", "coding"], p.interests
+    p.reload
+    assert_equal ["skydiving", "coding", "swimming"], p.interests
+  end
 end
 

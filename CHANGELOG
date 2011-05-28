@@ -1,5 +1,9 @@
 == Changelog
 
+=== 0.4.2
+
+* Added find_and_modify
+
 === 0.4.0
 
 * Reverted 0.3.2 and replaced with better, more compatible improvements.

@@ -8,20 +8,20 @@ class TestIdentityMap < Test::Unit::TestCase
       obj.create_indexes
     end
   end
-  
+
   should "be performant" do
     1.upto(1000) do |i|
       p = Person.new("name" => "Ben#{i}")
       p.insert!
     end
-    
+
     Mongoo::IdentityMap.on!
-    
+
     all = Person.find.to_a
-    
+
     p = Person.find(name: "Ben5").next
     assert_equal p.object_id, all[all.index(p)].object_id
-    
+
     Mongoo::IdentityMap.off!
   end
 
@@ -127,6 +127,22 @@ class TestIdentityMap < Test::Unit::TestCase
     people[0].name = "Not Ben"
 
     assert_equal "Not Ben", Person.find_one(p.id).name
+
+    Mongoo::IdentityMap.off!
+  end
+
+  should "be able to use find_and_modify" do
+    Mongoo::IdentityMap.on!
+
+    p = Person.new(name: "Ben", interests: ["skydiving", "coding"])
+    p.insert!
+    p2 = Person.find_and_modify({
+      query: { name: "Ben" },
+      update: { "$push" => { "interests" => "swimming" } },
+      new: true
+    })
+    assert_equal ["skydiving", "coding", "swimming"], p2.interests
+    assert_equal ["skydiving", "coding", "swimming"], p.interests
 
     Mongoo::IdentityMap.off!
   end
