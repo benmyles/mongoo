@@ -26,7 +26,6 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "lib/mongoo.rb",
-    "lib/mongoo/async.rb",
     "lib/mongoo/attribute_proxy.rb",
     "lib/mongoo/attribute_sanitizer.rb",
     "lib/mongoo/base.rb",
@@ -40,7 +39,6 @@ Gem::Specification.new do |s|
     "mongoo.gemspec",
     "test/helper.rb",
     "test/test_activemodel.rb",
-    "test/test_async.rb",
     "test/test_identity_map.rb",
     "test/test_mongohash.rb",
     "test/test_mongoo.rb",
@@ -54,7 +52,6 @@ Gem::Specification.new do |s|
   s.test_files = [
     "test/helper.rb",
     "test/test_activemodel.rb",
-    "test/test_async.rb",
     "test/test_identity_map.rb",
     "test/test_mongohash.rb",
     "test/test_mongoo.rb",
@@ -69,7 +66,6 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<activesupport>, [">= 3.0.3"])
       s.add_runtime_dependency(%q<activemodel>, [">= 3.0.3"])
       s.add_runtime_dependency(%q<mongo>, ["~> 1.3.1"])
-      s.add_runtime_dependency(%q<em-synchrony>, ["~> 0.2.0"])
       s.add_development_dependency(%q<ruby-debug19>, [">= 0"])
       s.add_development_dependency(%q<shoulda>, [">= 0"])
       s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
@@ -82,7 +78,6 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<activesupport>, [">= 3.0.3"])
       s.add_dependency(%q<activemodel>, [">= 3.0.3"])
       s.add_dependency(%q<mongo>, ["~> 1.3.1"])
-      s.add_dependency(%q<em-synchrony>, ["~> 0.2.0"])
       s.add_dependency(%q<ruby-debug19>, [">= 0"])
       s.add_dependency(%q<shoulda>, [">= 0"])
       s.add_dependency(%q<bundler>, ["~> 1.0.0"])
@@ -96,7 +91,6 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<activesupport>, [">= 3.0.3"])
     s.add_dependency(%q<activemodel>, [">= 3.0.3"])
     s.add_dependency(%q<mongo>, ["~> 1.3.1"])
-    s.add_dependency(%q<em-synchrony>, ["~> 0.2.0"])
     s.add_dependency(%q<ruby-debug19>, [">= 0"])
     s.add_dependency(%q<shoulda>, [">= 0"])
     s.add_dependency(%q<bundler>, ["~> 1.0.0"])

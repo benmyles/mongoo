@@ -7,7 +7,6 @@ gem "activesupport", ">= 3.0.3"
 gem "activemodel", ">= 3.0.3"
 
 gem "mongo", "~> 1.3.1"
-gem "em-synchrony", "~> 0.2.0", :require => false
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
