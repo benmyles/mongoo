@@ -1,11 +1,11 @@
 module Mongoo
   class InvalidAttributeValue < Exception; end
-  
+
   class AttributeSanitizer
     class << self
       def sanitize(field_type, val)
         return val if val.nil? || field_type.nil?
-        
+
         case field_type.to_sym
         when :string then
           val.is_a?(String) ? val : val.to_s
@@ -23,7 +23,8 @@ module Mongoo
           val.is_a?(Hash) ? val : raise(InvalidAttributeValue, val.inspect)
         when :time then
           Time.parse(val.to_s)
-          # val.is_a?(Time) ? val : Time.parse(val)
+        when :db_ref then
+          val.is_a?(BSON::DBRef) ? val : BSON::DBRef.new(val.collection.name, val.id)
         when :bool then
           if [true,false].include?(val)
             val
