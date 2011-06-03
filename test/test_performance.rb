@@ -1,3 +1,4 @@
+=begin
 require 'helper'
 require 'perftools'
 
@@ -25,7 +26,7 @@ class TestPerformance < Test::Unit::TestCase
     p.misc = { "a" => "b", "c" => "d", "e" => "f", "g" => "h" }
     1.upto(200) { |i| p.misc["i#{i}"] = "......... #{i} ........." }
     p.insert!
-    
+
     t1 = Time.now.utc.to_f
     PerfTools::CpuProfiler.start("/tmp/mongoo_test_performance") do
       1000.times do |i|
@@ -33,10 +34,11 @@ class TestPerformance < Test::Unit::TestCase
       end
     end
     t2 = Time.now.utc.to_f
-    
+
     out = `pprof.rb --text /tmp/mongoo_test_performance`
     puts out
-    
+
     puts "Perf: #{t2-t1}"
   end
 end
+=end

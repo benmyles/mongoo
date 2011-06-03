@@ -7,8 +7,10 @@ end
 # Mongoo.conn => #<Mongo::Connection:0x00000100db8ac0>
 
 module Mongoo
-  INDEX_META = {}
-  ATTRIBUTE_META = {}
+  INDEX_META       = {}
+  VALIDATOR_META   = {}
+  INPUT_TRANSFORMER_META  = {}
+  OUTPUT_TRANSFORMER_META = {}
 
   class << self
     attr_accessor :verbose_debug
@@ -45,13 +47,9 @@ require "forwardable"
 require "active_support/core_ext"
 require "active_model"
 
-require "mongoo/hash_ext"
 require "mongoo/cursor"
-require "mongoo/attribute_sanitizer"
-require "mongoo/attribute_proxy"
-require "mongoo/changelog"
 require "mongoo/persistence"
 require "mongoo/modifiers"
 require "mongoo/base"
-require "mongoo/mongohash"
+require "mongoo/document"
 require "mongoo/identity_map"

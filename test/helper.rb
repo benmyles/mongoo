@@ -19,6 +19,33 @@ require 'mongoo'
 Mongoo.conn = lambda { Mongo::Connection.new("localhost", 27017, :pool_size => 5, :timeout => 5) }
 Mongoo.db   = "mongoo-test"
 
+class Person < Mongoo::Base
+  RE_EMAIL = /^([^\s]+)((?:[-a-z0-9]\.)[a-z]{2,})$/i
+
+  validator(
+    /^email$/,  lambda { |v| v =~ RE_EMAIL ? nil : "email is invalid" })
+
+  input_transformer(
+    /_ts$/,     lambda { |v| v.to_f })
+
+  input_transformer(
+    /^friend$/, lambda { |v| v.is_a?(Person) ? v["_id"] : v })
+
+  output_transformer(
+    /^friend$/, lambda { |v| Person.find_one(v) }, { cache: true })
+end
+
+
+class SearchIndex < Mongoo::Base
+end
+
+class SpacePerson < Mongoo::Base
+end
+
+class TvShow < Mongoo::Base
+end
+
+=begin
 class SearchIndex < Mongoo::Base
   attribute "terms", :type => :array
   index "terms"
@@ -58,6 +85,7 @@ class TvShow < Mongoo::Base
   validates_presence_of "cast.director"
   validates_presence_of "rating"
 end
+=end
 
 class Test::Unit::TestCase
 end

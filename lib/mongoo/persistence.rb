@@ -152,7 +152,6 @@ module Mongoo
 
     def persisted?
       @persisted == true
-      #!get("_id").nil?
     end
 
     def collection
@@ -171,13 +170,13 @@ module Mongoo
             return false
           end
         end
-        ret = self.collection.insert(mongohash, opts)
+        ret = self.collection.insert(document.to_hash, opts)
         unless ret.is_a?(BSON::ObjectId)
           raise InsertError, "not an object: #{ret.inspect}"
         end
         set("_id", ret)
         @persisted = true
-        set_persisted_mongohash(mongohash)
+        document.reset_serialized_orig_map!
         ret
       end
       Mongoo::IdentityMap.write(self) if Mongoo::IdentityMap.on?
@@ -202,15 +201,15 @@ module Mongoo
         end
         opts[:only_if_current] = true unless opts.has_key?(:only_if_current)
         opts[:safe] = true if !opts.has_key?(:safe) && opts[:only_if_current] == true
-        update_hash = build_update_hash(self.changelog)
-        return true if update_hash.empty?
-        update_query_hash = build_update_query_hash(persisted_mongohash.to_key_value, self.changelog)
+        update_hash = document.oplog
+        return true if update_hash.blank?
+        update_query_hash = build_update_query_hash(update_hash)
         if Mongoo.verbose_debug
           puts "\n* update_query_hash: #{update_query_hash.inspect}\n  update_hash: #{update_hash.inspect}\n  opts: #{opts.inspect}\n"
         end
         ret = self.collection.update(update_query_hash, update_hash, opts)
         if !ret.is_a?(Hash) || (ret["updatedExisting"] && ret["n"] == 1)
-          set_persisted_mongohash(mongohash)
+          document.reset_serialized_orig_map!
           @persisted = true
           true
         else
@@ -258,33 +257,20 @@ module Mongoo
     def reload
       init_from_hash(collection.find_one(get("_id")))
       @persisted = true
-      set_persisted_mongohash(mongohash)
+      document.reset_serialized_orig_map!
       true
     end
 
-    def build_update_hash(changelog)
-      update_hash = {}
-      changelog.each do |op, k, v|
-        update_hash["$#{op}"] ||= {}
-        update_hash["$#{op}"][k] = v
-      end
-      update_hash
-    end
-    protected :build_update_hash
-
-    def build_update_query_hash(persisted_mongohash_kv, changelog)
+    def build_update_query_hash(update_hash)
       update_query_hash = { "_id" => get("_id") }
-      changelog.each do |op, k, v|
-        if persisted_val = persisted_mongohash_kv[k]
-          if persisted_val == []
-            # work around a bug where mongo won't find a doc
-            # using an empty array [] if an index is defined
-            # on that field.
-            persisted_val = { "$size" => 0 }
-          end
-          update_query_hash[k] = persisted_val
+
+      [(update_hash["$set"] || []) + (update_hash["$unset"] || [])].each do |k,v|
+        update_query_hash[k] = document.get_orig(k, { transform: false })
+        if update_query_hash[k] == []
+          update_query_hash[k] = { "$size" => 0 }
         end
       end
+
       update_query_hash
     end
     protected :build_update_query_hash

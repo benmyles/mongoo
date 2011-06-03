@@ -1,9 +1,10 @@
+=begin
 require 'helper'
 
 class TestMongohash < Test::Unit::TestCase
   should "work with dot_get, dot_set, dot_delete" do
     h = Mongoo::Mongohash.new({
-      "name" => "Ben", 
+      "name" => "Ben",
       "travel" => {},
       "location" => { "city" => "SF", "zip" => 94107, "demographics" => { "pop" => 120000 } }})
     assert_equal "Ben", h.dot_get("name")
@@ -34,3 +35,4 @@ class TestMongohash < Test::Unit::TestCase
   # end
 end
 
+=end

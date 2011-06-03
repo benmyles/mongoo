@@ -9,6 +9,45 @@ class TestMongoo < Test::Unit::TestCase
     end
   end
 
+  should "validate email" do
+    p = Person.new
+    p['name'] = "Ben"
+    p['address.line1'] = "123 Four Street"
+    p['address.line2'] = "Apt #9876"
+    assert p.valid?
+    p['email'] = 'foo'
+    assert !p.valid?
+    p['email'] = "ben@foo.com"
+    assert p.valid?
+  end
+
+  should "transform timestamps" do
+    p = Person.new
+    p['born_at_ts'] = Time.mktime(1984, 2, 2)
+    assert_equal 444556800.0, p['born_at_ts']
+  end
+
+  should "transform both input and output" do
+    ben = Person.new(name: "Ben", email: "ben@ben.com")
+    assert ben.valid?
+    ben.insert!
+    assert ben["_id"]
+
+    chris = Person.new(name: "Chris", email: "chris@chris.com")
+    assert chris.valid?
+    chris.insert!
+    assert chris["_id"]
+    chris["friend"] = ben
+    assert_equal ben, chris["friend"]
+    assert_equal ben["_id"], chris.get("friend", {transform: false})
+    objid1 = chris.get("friend").object_id
+    objid2 = chris.get("friend").object_id
+    assert_equal objid1, objid2
+    chris.clear_caches!
+    assert_not_equal objid2, chris.get("friend").object_id
+  end
+
+=begin
   should "be able to use a different db for each model" do
     assert_equal "mongoo-test", Mongoo.db.name
     assert_equal "mongoo-test", Person.db.name
@@ -351,5 +390,5 @@ class TestMongoo < Test::Unit::TestCase
     p.reload
     assert_equal ["skydiving", "coding", "swimming"], p.interests
   end
+=end
 end
-

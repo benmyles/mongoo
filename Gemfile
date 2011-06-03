@@ -8,6 +8,8 @@ gem "activemodel", ">= 3.0.3"
 
 gem "mongo", "~> 1.3.1"
 
+gem "nokogiri", "~> 1.4.4"
+
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
 group :development do

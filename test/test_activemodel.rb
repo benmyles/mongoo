@@ -1,3 +1,4 @@
+=begin
 require 'helper'
 
 class TestActivemodel < Test::Unit::TestCase
@@ -12,3 +13,4 @@ class TestActivemodel < Test::Unit::TestCase
   end
 end
 
+=end

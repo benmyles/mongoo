@@ -3,128 +3,93 @@ module Mongoo
 
   class Base
 
-    include Mongoo::Changelog
     include Mongoo::Persistence
     include Mongoo::Modifiers
-
-    include ActiveModel::Validations
 
     extend ActiveModel::Callbacks
     extend ActiveModel::Naming
 
     define_model_callbacks :insert, :update, :remove
 
-    def self.attribute(name, opts={})
-      raise ArgumentError.new("missing :type") unless opts[:type]
-      self.attributes[name.to_s] = opts
-      define_attribute_methods
+    def self.validators
+      Mongoo::VALIDATOR_META[self.to_s] ||= []
+    end
+
+    def self.validator(regex, _proc)
+      self.validators << [regex, _proc]
       true
     end
 
-    def self.attributes
-      Mongoo::ATTRIBUTE_META[self.to_s] ||= {}
+    def self.input_transformers
+      Mongoo::INPUT_TRANSFORMER_META[self.to_s] ||= []
     end
 
-    def self.attributes_tree
-      tree = {}
-      self.attributes.each do |name, opts|
-        parts = name.split(".")
-        curr_branch = tree
-        while part = parts.shift
-          if !parts.empty?
-            curr_branch[part.to_s] ||= {}
-            curr_branch = curr_branch[part.to_s]
-          else
-            curr_branch[part.to_s] = opts[:type]
-          end
-        end
-      end
-      tree
+    def self.input_transformer(regex, _proc, opts={})
+      self.input_transformers << [regex, _proc, opts]
+      true
     end
 
-    def self.define_attribute_methods
-      define_method("id") do
-        get("_id")
-      end
-      define_method("id=") do |val|
-        set("_id", val)
-      end
-
-      self.attributes_tree.each do |name, val|
-        if val.is_a?(Hash)
-          define_method(name) do
-            AttributeProxy.new(val, [name], self)
-          end
-        else
-          define_method(name) do
-            get(name)
-          end
-          define_method("#{name}=") do |val|
-            set(name, val)
-          end
-        end
-      end
+    def self.output_transformers
+      Mongoo::OUTPUT_TRANSFORMER_META[self.to_s] ||= []
     end
 
-    def self.known_attribute?(k)
-      k == "_id" || self.attributes[k.to_s]
+    def self.output_transformer(regex, _proc, opts={})
+      self.output_transformers << [regex, _proc, opts]
+      true
     end
 
     def initialize(hash={}, persisted=false)
       @persisted = persisted
       init_from_hash(hash)
-      set_persisted_mongohash((persisted? ? mongohash : nil))
     end
 
     def ==(val)
       if val.class.to_s == self.class.to_s
         if val.persisted?
-          val.id == self.id
+          val["_id"] == self["_id"]
         else
-          self.mongohash.raw_hash == val.mongohash.raw_hash
+          self.document == val.document
         end
       end
     end
 
-    def known_attribute?(k)
-      self.class.known_attribute?(k)
+    def [](k)
+      document[k]
     end
 
-    def read_attribute_for_validation(key)
-      get_attribute(key)
+    def []=(k,v)
+      document[k] = v
     end
 
-    def get_attribute(k)
-      unless known_attribute?(k)
-        raise UnknownAttributeError, k
-      end
-      mongohash.dot_get(k.to_s)
+    def get_attribute(k, opts={})
+      document.get(k, opts)
     end
     alias :get :get_attribute
     alias :g   :get_attribute
 
-    def set_attribute(k,v)
-      unless known_attribute?(k)
-        if self.respond_to?("#{k}=")
-          return self.send("#{k}=", v)
-        else
-          raise UnknownAttributeError, k
-        end
-      end
-      unless k.to_s == "_id" || v.nil?
-        field_type = self.class.attributes[k.to_s][:type]
-        v = Mongoo::AttributeSanitizer.sanitize(field_type, v)
-      end
-      mongohash.dot_set(k.to_s,v)
+    def set_attribute(k, v, opts={})
+      document.set(k, v, opts)
     end
     alias :set :set_attribute
     alias :s   :set_attribute
 
+    def set_orig_attribute(k, v, opts={})
+      document.set_orig(k, v, opts)
+    end
+
+    alias :set_orig :set_orig_attribute
+
     def unset_attribute(k)
-      mongohash.dot_delete(k); true
+      document.unset(k)
     end
     alias :unset :unset_attribute
     alias :u :unset_attribute
+
+    def unset_orig_attribute(k)
+      document.unset_orig(k)
+    end
+
+    alias :unset_orig :unset_orig_attribute
 
     def set_attributes(k_v_pairs)
       k_v_pairs.each do |k,v|
@@ -145,50 +110,54 @@ module Mongoo
     end
     alias :unsets :unset_attributes
 
-    def attributes
-      mongohash.to_key_value
+    def clear_caches!
+      document.clear_transformer_cache!
     end
 
-    def merge!(hash)
-      if hash.is_a?(Mongoo::Mongohash)
-        hash = hash.raw_hash
+    def errors
+      document.errors
+    end
+
+    def valid?
+      errors.blank?
+    end
+
+    def merge!(obj)
+      if obj.is_a?(Hash)
+        document.merge_in_hash!(hash)
+      elsif obj.is_a?(Mongoo::Document)
+        document.merge_in_document!(obj)
+      else
+        false
       end
-      hash.deep_stringify_keys!
-      hash = mongohash.raw_hash.deep_merge(hash)
-      set_mongohash( Mongoo::Mongohash.new(hash) )
-      mongohash
     end
 
     def init_from_hash(hash)
-      unless hash.is_a?(Mongoo::Mongohash)
-        hash = Mongoo::Mongohash.new(hash)
+      validators = self.class.validators.collect do |regex, _proc|
+        Mongoo::Document::Validator.new(regex, _proc)
       end
-      set_mongohash hash
+
+      input_transformers = self.class.input_transformers.collect do |regex, _proc, opts|
+        Mongoo::Document::Transformer.new(regex, _proc, opts)
+      end
+
+      output_transformers = self.class.output_transformers.collect do |regex, _proc, opts|
+        Mongoo::Document::Transformer.new(regex, _proc, opts)
+      end
+
+      set_document Mongoo::Document.new(hash, { validators: validators,
+                                                input_transformers: input_transformers,
+                                                output_transformers: output_transformers })
     end
     protected :init_from_hash
 
-    def set_mongohash(mongohash)
-      @mongohash = mongohash
+    def set_document(document)
+      @document = document
     end
-    protected :set_mongohash
+    protected :set_document
 
-    def mongohash
-      @mongohash
-    end
-
-    def set_persisted_mongohash(hash)
-      @serialized_persisted_mongohash = Marshal.dump(hash)
-      @persisted_mongohash = nil
-      true
-    end
-    protected :set_persisted_mongohash
-
-    def persisted_mongohash
-      @persisted_mongohash ||= begin
-        if @serialized_persisted_mongohash
-          Marshal.load(@serialized_persisted_mongohash)
-        end
-      end
+    def document
+      @document
     end
   end
 end

@@ -1,3 +1,4 @@
+=begin
 require 'helper'
 
 class TestIdentityMap < Test::Unit::TestCase
@@ -147,3 +148,4 @@ class TestIdentityMap < Test::Unit::TestCase
     Mongoo::IdentityMap.off!
   end
 end
+=end
