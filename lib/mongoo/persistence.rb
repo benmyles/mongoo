@@ -205,21 +205,30 @@ module Mongoo
         update_hash = build_update_hash(self.changelog)
         return true if update_hash.empty?
         update_query_hash = build_update_query_hash(persisted_mongohash.to_key_value, self.changelog)
+
         if Mongoo.verbose_debug
           puts "\n* update_query_hash: #{update_query_hash.inspect}\n  update_hash: #{update_hash.inspect}\n  opts: #{opts.inspect}\n"
         end
-        ret = self.collection.update(update_query_hash, update_hash, opts)
-        if !ret.is_a?(Hash) || (ret["updatedExisting"] && ret["n"] == 1)
-          set_persisted_mongohash(mongohash)
-          @persisted = true
-          true
+
+        if opts.delete(:find_and_modify) == true
+          ret = self.collection.find_and_modify(query: update_query_hash,
+                                                update: update_hash,
+                                                new: true)
+          reload(ret)
         else
-          if opts[:only_if_current]
-            raise StaleUpdateError, ret.inspect
+          ret = self.collection.update(update_query_hash, update_hash, opts)
+          if !ret.is_a?(Hash) || (ret["updatedExisting"] && ret["n"] == 1)
+            set_persisted_mongohash(mongohash)
+            @persisted = true
+            true
           else
-            raise UpdateError, ret.inspect
+            if opts[:only_if_current]
+              raise StaleUpdateError, ret.inspect
+            else
+              raise UpdateError, ret.inspect
+            end
           end
-        end
+        end # if opts.delete(:find_and_modify)
       end
     end
 
@@ -255,8 +264,9 @@ module Mongoo
       remove(opts.merge(:safe => true))
     end
 
-    def reload
-      init_from_hash(collection.find_one(get("_id")))
+    def reload(new_doc=nil)
+      new_doc ||= collection.find_one(get("_id"))
+      init_from_hash(new_doc)
       @persisted = true
       set_persisted_mongohash(mongohash)
       true

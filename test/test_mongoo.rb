@@ -229,14 +229,6 @@ class TestMongoo < Test::Unit::TestCase
     assert_equal ["snowboarding", "travelling"], p.interests
   end
 
-  should "not be able to modify fields that don't exist" do
-    p = Person.new("name" => "Ben", "visits" => 0)
-    p.insert!
-    assert_raise(Mongoo::UnknownAttributeError) do
-      p.mod! { |mod| mod.push("idontexist", "foobar") }
-    end
-  end
-
   should "be able to access a hash type directly" do
     p = Person.new("name" => "Ben")
     p.insert!
@@ -349,6 +341,76 @@ class TestMongoo < Test::Unit::TestCase
     assert_equal ["skydiving", "coding", "swimming"], p2.interests
     assert_equal ["skydiving", "coding"], p.interests
     p.reload
+    assert_equal ["skydiving", "coding", "swimming"], p.interests
+  end
+
+  should "still do set/unset updates on granular attributes on a hash field" do
+    p = Person.new(name: "Ben", interests: ["skydiving", "coding"], misc: { foo: { bar: 1, zar: 2 } })
+    p.insert!
+    p.misc['foo']['zar'] = 3
+    assert_equal [[:set, "misc.foo.zar", 3]], p.changelog
+  end
+
+  should "be able to apply modifiers on hash attribute values" do
+    p = Person.new(name: "Ben", interests: ["skydiving", "coding"], misc: { foo: { bar: 1, zar: 2 } })
+    p.insert!
+    p.mod { |m| m.inc 'misc.foo.zar', 2 }
+    assert_equal 4, p.misc['foo']['zar']
+    p.reload
+    assert_equal 4, p.misc['foo']['zar']
+  end
+
+  should "be able to abort modifier update if there are stale values" do
+    p = Person.new(name: "Ben", interests: ["skydiving", "coding"], misc: { foo: { bar: 1, zar: 2 } })
+    p.insert!
+    p.mod { |m| m.inc 'misc.foo.zar', 2 }
+
+    p2 = Person.find_one(p.id)
+    p2.mod { |m| m.inc 'misc.foo.zar', 2 }
+    assert_equal 6, p2.misc['foo']['zar']
+
+    assert_raise(Mongoo::ModifierUpdateError) do
+      p.mod(only_if_current: true) { |m| m.inc 'misc.foo.zar', 1 }
+    end
+  end
+
+  should "be able to do a find_and_modify when using modifiers" do
+    p = Person.new(name: "Ben", interests: ["skydiving", "coding"], misc: { foo: { bar: 1, zar: 2 } })
+    p.insert!
+    p.mod { |m| m.inc 'misc.foo.zar', 2 }
+
+    p2 = Person.find_one(p.id)
+    p2.mod { |m| m.inc 'misc.foo.zar', 2 }
+    assert_equal 6, p2.misc['foo']['zar']
+
+    p.mod { |m| m.inc 'misc.foo.zar', 1 }
+    assert_equal 5, p.misc['foo']['zar']
+
+    # but if we do a find_and_modify ....
+
+    p = Person.new(name: "Ben", interests: ["skydiving", "coding"], misc: { foo: { bar: 1, zar: 2 } })
+    p.insert!
+    p.mod { |m| m.inc 'misc.foo.zar', 2 }
+
+    p2 = Person.find_one(p.id)
+    p2.mod { |m| m.inc 'misc.foo.zar', 2 }
+    assert_equal 6, p2.misc['foo']['zar']
+
+    p.mod(find_and_modify: true) { |m| m.inc 'misc.foo.zar', 1 }
+    assert_equal 7, p.misc['foo']['zar']
+  end
+
+  should "be able to do an update using find_and_modify" do
+    p = Person.new(name: "Ben", interests: ["skydiving", "coding"])
+    p.insert!
+
+    p2 = Person.find_one(p.id)
+    p2.mod! { |m| m.push "interests", "swimming" }
+
+    assert_equal ["skydiving","coding"], p.interests
+    p.name = "Ben Myles"
+    p.update!(find_and_modify: true)
+    assert_equal "Ben Myles", p.name
     assert_equal ["skydiving", "coding", "swimming"], p.interests
   end
 end
