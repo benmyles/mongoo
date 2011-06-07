@@ -112,6 +112,12 @@ module Mongoo
     alias :set :set_attribute
     alias :s   :set_attribute
 
+    def get_or_set_attribute(k, v)
+      get_attribute(k) || set_attribute(k, v)
+    end
+    alias :get_or_set :get_or_set_attribute
+    alias :gs :get_or_set_attribute
+
     def unset_attribute(k)
       mongohash.dot_delete(k); true
     end

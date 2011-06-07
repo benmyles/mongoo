@@ -16,8 +16,16 @@ module Mongoo
         @array
       end
 
+      def [](index)
+        if res = raw[index]
+          build(res)
+        end
+      end
+
       def range(min=0, max=-1)
-        raw[min..max].collect { |h| build(h) }
+        if res = raw[min..max]
+          res.collect { |h| build(h) }
+        end
       end
 
       def all

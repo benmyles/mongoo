@@ -7,15 +7,15 @@ class Book < Mongoo::Base
   attribute "sample_chapter", :type => :hash
 
   def chapters
-    @chapters ||= embedded_array_proxy((g('chapters') || s('chapters',[])), Book::Chapter)
+    @chapters ||= embedded_array_proxy(get_or_set('chapters',[]), Book::Chapter)
   end
 
   def authors
-    @authors ||= embedded_hash_proxy((g('authors') || s('authors', {})), Book::Author)
+    @authors ||= embedded_hash_proxy(get_or_set('authors', {}), Book::Author)
   end
 
   def sample_chapter
-    @sample_chapter ||= embedded_doc((g('sample_chapter') || s('sample_chapter', {})), Book::Chapter)
+    @sample_chapter ||= embedded_doc(get_or_set('sample_chapter', {}), Book::Chapter)
   end
 end
 
@@ -52,6 +52,8 @@ class TestEmbedded < Test::Unit::TestCase
     assert_not_equal b.chapters.range(0,0), b2.chapters.range(0,0)
 
     assert_equal 2, b2.chapters.size
+
+    assert_equal "How to Transcend Fear", b2.chapters[0].title
   end
 
   should "be able to work with embedded doc hashes" do
