@@ -413,5 +413,19 @@ class TestMongoo < Test::Unit::TestCase
     assert_equal "Ben Myles", p.name
     assert_equal ["skydiving", "coding", "swimming"], p.interests
   end
+
+  should "be just one _id key after insert" do
+    p = Person.new(name: "Ben")
+    p.insert!
+    assert p.mongohash.has_key?('_id')
+    assert !p.mongohash.has_key?(:_id)
+    p.name = "Ben Myles"
+    p.update!
+    assert p.mongohash.has_key?('_id')
+    assert !p.mongohash.has_key?(:_id)
+    p = Person.find_one(p.id)
+    assert p.mongohash.has_key?('_id')
+    assert !p.mongohash.has_key?(:_id)
+  end
 end
 

@@ -175,6 +175,7 @@ module Mongoo
         unless ret.is_a?(BSON::ObjectId)
           raise InsertError, "not an object: #{ret.inspect}"
         end
+        mongohash.delete(:_id)
         set("_id", ret)
         @persisted = true
         set_persisted_mongohash(mongohash)
