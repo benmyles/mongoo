@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{mongoo}
-  s.version = "0.4.5"
+  s.version = "0.4.6"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ben Myles"]
-  s.date = %q{2011-06-06}
+  s.date = %q{2011-06-07}
   s.description = %q{Simple object mapper for MongoDB}
   s.email = %q{ben.myles@gmail.com}
   s.extra_rdoc_files = [
@@ -30,7 +30,11 @@ Gem::Specification.new do |s|
     "lib/mongoo/attribute_sanitizer.rb",
     "lib/mongoo/base.rb",
     "lib/mongoo/changelog.rb",
+    "lib/mongoo/core.rb",
     "lib/mongoo/cursor.rb",
+    "lib/mongoo/embedded/array_proxy.rb",
+    "lib/mongoo/embedded/base.rb",
+    "lib/mongoo/embedded/hash_proxy.rb",
     "lib/mongoo/hash_ext.rb",
     "lib/mongoo/identity_map.rb",
     "lib/mongoo/modifiers.rb",
@@ -39,6 +43,7 @@ Gem::Specification.new do |s|
     "mongoo.gemspec",
     "test/helper.rb",
     "test/test_activemodel.rb",
+    "test/test_embedded.rb",
     "test/test_identity_map.rb",
     "test/test_mongohash.rb",
     "test/test_mongoo.rb",
@@ -52,6 +57,7 @@ Gem::Specification.new do |s|
   s.test_files = [
     "test/helper.rb",
     "test/test_activemodel.rb",
+    "test/test_embedded.rb",
     "test/test_identity_map.rb",
     "test/test_mongohash.rb",
     "test/test_mongoo.rb",
