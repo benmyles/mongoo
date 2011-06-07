@@ -20,6 +20,10 @@ module Mongoo
         build raw[k]
       end
 
+      def delete(k)
+        raw.delete(k)
+      end
+
       def []=(k,o)
         raw[k] = o.to_hash
       end

@@ -9,6 +9,7 @@ end
 module Mongoo
   INDEX_META = {}
   ATTRIBUTE_META = {}
+  EMBEDS_META = {}
 
   class << self
     attr_accessor :verbose_debug
@@ -55,7 +56,6 @@ require "mongoo/modifiers"
 require "mongoo/core"
 require "mongoo/base"
 require "mongoo/embedded/base"
-require "mongoo/embedded/array_proxy"
 require "mongoo/embedded/hash_proxy"
 require "mongoo/mongohash"
 require "mongoo/identity_map"

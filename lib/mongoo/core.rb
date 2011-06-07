@@ -5,6 +5,96 @@ module Mongoo
     include ActiveModel::Validations
     extend  ActiveModel::Naming
 
+    def self.embeds_meta
+      Mongoo::EMBEDS_META[self.to_s] ||= {}
+    end
+
+    def self.embeds_many(attrib_key, opts)
+      raise(ArgumentError, "missing opt :as")    unless opts[:as]
+      raise(ArgumentError, "missing opt :class") unless opts[:class]
+
+      self.embeds_meta["embeds_many"] ||= {}
+      self.embeds_meta["embeds_many"][attrib_key] = opts
+
+      define_embeds_many_methods
+    end
+
+    def self.define_embeds_many_methods
+      (self.embeds_meta["embeds_many"] || {}).each do |attrib_key, opts|
+        define_method(opts[:as]) do
+          if val = instance_variable_get("@#{opts[:as]}")
+            val
+          else
+            instance_variable_set("@#{opts[:as]}",
+              embedded_hash_proxy(get_or_set(attrib_key,{}), eval(opts[:class])))
+          end
+        end # define_method
+        unless opts[:validate] == false
+          define_method("validate_#{opts[:as]}") do
+            send(opts[:as]).each do |k,v|
+              unless v.valid?
+                v.errors.each do |field, messages|
+                  errors.add "#{attrib_key}.#{k}.#{field}", messages
+                end
+              end
+            end
+          end # define_method
+          validate "validate_#{opts[:as]}"
+        end
+      end
+    end
+
+    def self.embeds_one(attrib_key, opts)
+      raise(ArgumentError, "missing opt :as")    unless opts[:as]
+      raise(ArgumentError, "missing opt :class") unless opts[:class]
+
+      self.embeds_meta["embeds_one"] ||= {}
+      self.embeds_meta["embeds_one"][attrib_key] = opts
+
+      define_embeds_one_methods
+    end
+
+    def self.define_embeds_one_methods
+      (self.embeds_meta["embeds_one"] || {}).each do |attrib_key, opts|
+        define_method(opts[:as]) do
+          if val = instance_variable_get("@#{opts[:as]}")
+            val
+          else
+            if hash = get(attrib_key)
+              instance_variable_set("@#{opts[:as]}",
+                embedded_doc(hash, eval(opts[:class])))
+            end
+          end
+        end
+
+        define_method("#{opts[:as]}=") do |obj|
+          set(attrib_key, (obj.nil? ? nil : obj.to_hash))
+          send("#{opts[:as]}")
+        end
+
+        unless opts[:validate] == false
+          define_method("validate_#{opts[:as]}") do
+            if v = send(opts[:as])
+              unless v.valid?
+                v.errors.each do |field, messages|
+                  errors.add "#{attrib_key}.#{field}", messages
+                end
+              end
+            end
+          end # define_method
+          validate "validate_#{opts[:as]}"
+        end
+      end
+    end
+
+    def embedded_hash_proxy(attrib, klass)
+      Mongoo::Embedded::HashProxy.new(self, attrib, klass)
+    end
+
+    def embedded_doc(attrib, klass)
+      klass.new(self, attrib)
+    end
+
     def self.attribute(name, opts={})
       raise ArgumentError.new("missing :type") unless opts[:type]
       self.attributes[name.to_s] = opts
