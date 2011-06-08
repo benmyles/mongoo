@@ -427,5 +427,30 @@ class TestMongoo < Test::Unit::TestCase
     assert p.mongohash.has_key?('_id')
     assert !p.mongohash.has_key?(:_id)
   end
+
+  should "be able to use save! instead of insert/update" do
+    p = Person.new(name: "Ben")
+    assert !p.persisted?
+    p.save!
+    assert p.persisted?
+    assert_equal "Ben", Person.find_one(p.id).name
+    p.name = "Benjamin"
+    p.save!
+    assert p.persisted?
+    assert_equal "Benjamin", Person.find_one(p.id).name
+  end
+
+  should "be able to use save instead of insert/update" do
+    p = Person.new(name: "Ben")
+    assert !p.persisted?
+    p.save
+    assert p.persisted?
+    assert_equal "Ben", Person.find_one(p.id).name
+    p.name = "Benjamin"
+    p.save
+    assert p.persisted?
+    assert_equal "Benjamin", Person.find_one(p.id).name
+  end
+
 end
 

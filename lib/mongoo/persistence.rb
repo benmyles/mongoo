@@ -150,6 +150,14 @@ module Mongoo
       self
     end
 
+    def save!(*args)
+      persisted? ? update!(*args) : insert!(*args)
+    end
+
+    def save(*args)
+      persisted? ? update(*args) : insert(*args)
+    end
+
     def persisted?
       @persisted == true
       #!get("_id").nil?

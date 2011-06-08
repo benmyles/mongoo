@@ -135,4 +135,22 @@ class TestEmbedded < Test::Unit::TestCase
     b = Book.find_one(b.id)
     assert_equal 1, b.purchases.size
   end
+
+  should "be able to call save from an embedded doc" do
+    b = Book.new(title: "BASE Jumping Basics")
+    purchase_id = BSON::ObjectId.new.to_s
+    b.purchases[purchase_id] = b.purchases.build({payment_type: "Cash"})
+    b.purchases[purchase_id].save!
+
+    b = Book.find_one(b.id)
+    assert_equal "Cash", b.purchases[purchase_id].payment_type
+    b.purchases[purchase_id].payment_type = "Card"
+    b.purchases[purchase_id].save!
+    b = Book.find_one(b.id)
+    assert_equal "Card", b.purchases[purchase_id].payment_type
+    b.purchases[purchase_id].payment_type = "Paypal"
+    b.save!
+    b = Book.find_one(b.id)
+    assert_equal "Paypal", b.purchases[purchase_id].payment_type
+  end
 end
