@@ -1,5 +1,23 @@
 == Changelog
 
+=== 0.5.0
+
+* Introduced an API/DSL for defining attributes and other features.
+  The old API will no longer work.
+
+  class Book < Mongoo::Base
+    describe do |d|
+      d.attribute "title", :type => :string
+      d.embeds_one  "sample_chapter",  :class => "Book::Chapter"
+      d.embeds_many "chapters",        :class => 'Book::Chapter'
+      d.index "title"
+    end
+  end
+
+* Notice too, there is now better support for embedded docs. See test_embedded.rb.
+
+* General, misc cleanup and restructuring of code.
+
 === 0.4.2
 
 * Added find_and_modify

@@ -9,6 +9,22 @@ class TestMongoo < Test::Unit::TestCase
     end
   end
 
+  should "respond to the correct attributes" do
+    assert Person.new.respond_to?("jobs")
+    assert !Person.new.respond_to?("cast")
+
+    assert !TvShow.new.respond_to?("jobs")
+    assert TvShow.new.respond_to?("cast")
+  end
+
+  should "have the right index meta" do
+    assert Person.index_meta["location.city"]
+    assert !Person.index_meta["cast.director"]
+
+    assert !TvShow.index_meta["location.city"]
+    assert TvShow.index_meta["cast.director"]
+  end
+
   should "be able to use a different db for each model" do
     assert_equal "mongoo-test", Mongoo.db.name
     assert_equal "mongoo-test", Person.db.name

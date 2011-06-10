@@ -1,40 +1,43 @@
 require 'helper'
 
 class Book < Mongoo::Base
-  attribute "title",          :type => :string
-
-  attribute "chapter_docs",       :type => :hash
-  attribute "author_docs",        :type => :hash
-  attribute "sample_chapter_doc", :type => :hash
-  attribute "purchase_docs",      :type => :hash
-
-  embeds_one  "sample_chapter_doc", :as => "sample_chapter",  :class => "Book::Chapter"
-  embeds_many "chapter_docs",       :as => "chapters",        :class => 'Book::Chapter'
-  embeds_many "author_docs",        :as => "authors",         :class => 'Book::Author'
-  embeds_many "purchase_docs",      :as => "purchases",       :class => 'Book::Purchase'
+  describe do |d|
+    d.attribute "title", :type => :string
+    d.embeds_one  "sample_chapter",  :class => "Book::Chapter"
+    d.embeds_many "chapters",        :class => 'Book::Chapter'
+    d.embeds_many "authors",         :class => 'Book::Author'
+    d.embeds_many "purchases",       :class => 'Book::Purchase'
+  end
 end
 
 class Book::Chapter < Mongoo::Embedded::Base
-  attribute "title", :type => :string
+  describe do |d|
+    d.attribute "title", :type => :string
+  end
 end
 
 class Book::Author < Mongoo::Embedded::Base
-  attribute "first_name", :type => :string
-  attribute "last_name",  :type => :string
+  describe do |d|
+    d.attribute "first_name", :type => :string
+    d.attribute "last_name",  :type => :string
+  end
 end
 
 class Book::Purchase < Mongoo::Embedded::Base
-  attribute "payment_type",  :type => :string
-
-  attribute   "customer_doc", :type => :hash
-  embeds_one  "customer_doc", :as => "customer", :class => 'Book::Purchase::Customer'
+  describe do |d|
+    d.attribute "payment_type",  :type => :string
+    d.embeds_one "customer", :class => 'Book::Purchase::Customer'
+  end
 
   validates_presence_of :payment_type
 end
 
 class Book::Purchase::Customer < Mongoo::Embedded::Base
-  attribute "name", :type => :string
-  attribute "phone", :type => :string
+  describe do |d|
+    d.attribute "name", :type => :string
+    d.attribute "phone", :type => :string
+  end
+
   validates_presence_of :name
   validates_presence_of :phone
 end
@@ -68,11 +71,11 @@ class TestEmbedded < Test::Unit::TestCase
     b = Book.new(title: "BASE Jumping Basics")
     b.sample_chapter = Book::Chapter.new(b, {})
     b.sample_chapter.title = "Understanding the Risks"
-    assert_equal "Understanding the Risks", b.g('sample_chapter_doc')['title']
+    assert_equal "Understanding the Risks", b.g('embedded_sample_chapter')['title']
     b.insert!
     b = Book.find_one(b.id)
     assert_equal "Understanding the Risks", b.sample_chapter.title
-    assert_equal "Understanding the Risks", b.g('sample_chapter_doc')['title']
+    assert_equal "Understanding the Risks", b.g('embedded_sample_chapter')['title']
   end
 
   should "validate embedded docs and can have nested embeds" do
@@ -82,7 +85,7 @@ class TestEmbedded < Test::Unit::TestCase
     purchase_id = BSON::ObjectId.new.to_s
     b.purchases[purchase_id] = b.purchases.build({})
     assert !b.valid?
-    assert_equal({:"purchase_docs.#{purchase_id}.payment_type"=>["can't be blank"]}, b.errors)
+    assert_equal({:"embedded_purchases.#{purchase_id}.payment_type"=>["can't be blank"]}, b.errors)
     b.purchases[purchase_id].payment_type = "Cash"
     assert b.valid?
     b.update!
@@ -93,14 +96,14 @@ class TestEmbedded < Test::Unit::TestCase
     b.purchases[purchase_id].customer = Book::Purchase::Customer.new(b.purchases[purchase_id], name: "Jiminy")
     assert_equal "Jiminy", b.purchases[purchase_id].customer.name
     assert !b.valid?
-    assert_equal({:"purchase_docs.#{purchase_id}.customer_doc.phone"=>["can't be blank"]}, b.errors)
+    assert_equal({:"embedded_purchases.#{purchase_id}.embedded_customer.phone"=>["can't be blank"]}, b.errors)
     b.purchases[purchase_id].customer.phone = "123"
     assert b.valid?
     b.update!
     b = Book.find_one(b.id)
     assert_equal "Jiminy", b.purchases[purchase_id].customer.name
     b.purchases[purchase_id].customer = nil
-    assert_equal [[:unset, "purchase_docs.#{purchase_id}.customer_doc", 1]], b.changelog
+    assert_equal [[:unset, "embedded_purchases.#{purchase_id}.embedded_customer", 1]], b.changelog
     b.update!
     b = Book.find_one(b.id)
     assert_nil b.purchases[purchase_id].customer

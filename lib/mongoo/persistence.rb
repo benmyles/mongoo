@@ -123,7 +123,8 @@ module Mongoo
       end
 
       def index_meta
-        Mongoo::INDEX_META[self.collection_name] ||= {}
+        return @index_meta if @index_meta
+        @index_meta = {}
       end
 
       def index(spec, opts={})

@@ -7,11 +7,6 @@ end
 # Mongoo.conn => #<Mongo::Connection:0x00000100db8ac0>
 
 module Mongoo
-  INDEX_META     = {}
-  ATTRIBUTE_META = {}
-  EMBEDS_META    = {}
-  GRID_FS_META   = {}
-
   class << self
     attr_accessor :verbose_debug
 
@@ -47,6 +42,8 @@ require "forwardable"
 require "active_support/core_ext"
 require "active_model"
 
+require "mongoo/describe_dsl"
+
 require "mongoo/hash_ext"
 require "mongoo/cursor"
 require "mongoo/attribute_sanitizer"
@@ -54,10 +51,22 @@ require "mongoo/attribute_proxy"
 require "mongoo/changelog"
 require "mongoo/persistence"
 require "mongoo/modifiers"
+
+require "mongoo/embedded/describe_dsl"
+require "mongoo/embedded/core_mixin"
+
+require "mongoo/attributes/describe_dsl"
+require "mongoo/attributes"
+
 require "mongoo/core"
 require "mongoo/base"
+
 require "mongoo/embedded/base"
 require "mongoo/embedded/hash_proxy"
+
 require "mongoo/mongohash"
 require "mongoo/identity_map"
-require "mongoo/grid_fs"
+
+require "mongoo/grid_fs/describe_dsl"
+require "mongoo/grid_fs/file"
+require "mongoo/grid_fs/files"

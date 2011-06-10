@@ -3,22 +3,21 @@ require 'helper'
 class Email < Mongoo::Base
   include Mongoo::GridFs
 
-  attribute "subject", :type => :string
-
-  attribute  "attachment_doc", :type => :hash
-  embeds_one "attachment_doc", :as => "attachment",  :class => "Email::Attachment"
-
-  grid_fs_file "raw_message"
-
-  grid_fs_files "notes"
+  describe do |d|
+    d.attribute "subject", :type => :string
+    d.embeds_one "attachment", :class => "Email::Attachment"
+    d.grid_fs_file  "raw_message"
+    d.grid_fs_files "notes"
+  end
 end
 
 class Email::Attachment < Mongoo::Embedded::Base
   include Mongoo::GridFs
 
-  attribute "filename", :type => :string
-
-  grid_fs_file "data"
+  describe do |d|
+    d.attribute "filename", :type => :string
+    d.grid_fs_file "data"
+  end
 end
 
 class Image < Mongoo::Base
@@ -35,9 +34,6 @@ class TestGridFs < Test::Unit::TestCase
   end
 
   should "be able to use a file in a normal doc" do
-    puts "Image.foo: #{Image.foo}"
-    puts "Email.foo: #{Email.foo}"
-
     e = Email.new(subject: "Hello, World!")
     assert_equal Mongoo::GridFs::File, e.raw_message.class
     assert_nil e.raw_message.get
@@ -80,6 +76,16 @@ class TestGridFs < Test::Unit::TestCase
     e = Email.new(subject: "Hello, World!")
     assert_equal Mongoo::GridFs::Files, e.notes.class
     assert_nil e.notes.get("monday")
+    e.notes.put("tuesday", "Tuesday is a good day.")
+    assert_equal "Tuesday is a good day.", e.notes.get("tuesday")
+    e.insert!
+    e = Email.find_one(e.id)
+    assert_equal "Tuesday is a good day.", e.notes.get("tuesday")
+    e.notes.delete("tuesday")
+    assert_nil e.notes.get("tuesday")
+    e.update!
+    e = Email.find_one(e.id)
+    assert_nil e.notes.get("tuesday")
   end
 
 end
