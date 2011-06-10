@@ -138,6 +138,18 @@ module Mongoo
       end
     end # ClassMethods
 
+    def db
+      self.class.db
+    end
+
+    def conn
+      self.class.conn
+    end
+
+    def collection_name
+      self.class.collection_name
+    end
+
     def to_param
       persisted? ? get("_id").to_s : nil
     end

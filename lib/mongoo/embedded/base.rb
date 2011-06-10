@@ -12,6 +12,18 @@ module Mongoo
         @parent.persisted?
       end
 
+      def db
+        @parent.db
+      end
+
+      def conn
+        @parent.conn
+      end
+
+      def collection_name
+        @parent.collection_name
+      end
+
       def ==(other)
         to_hash == other.to_hash
       end

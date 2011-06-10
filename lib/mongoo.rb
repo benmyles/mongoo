@@ -7,9 +7,10 @@ end
 # Mongoo.conn => #<Mongo::Connection:0x00000100db8ac0>
 
 module Mongoo
-  INDEX_META = {}
+  INDEX_META     = {}
   ATTRIBUTE_META = {}
-  EMBEDS_META = {}
+  EMBEDS_META    = {}
+  GRID_FS_META   = {}
 
   class << self
     attr_accessor :verbose_debug
@@ -59,3 +60,4 @@ require "mongoo/embedded/base"
 require "mongoo/embedded/hash_proxy"
 require "mongoo/mongohash"
 require "mongoo/identity_map"
+require "mongoo/grid_fs"
