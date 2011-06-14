@@ -156,4 +156,31 @@ class TestEmbedded < Test::Unit::TestCase
     b = Book.find_one(b.id)
     assert_equal "Paypal", b.purchases[purchase_id].payment_type
   end
+
+  should "be able to get the key of the embedded doc" do
+    b = Book.new(title: "BASE Jumping Basics")
+    purchase_key = BSON::ObjectId.new.to_s
+    b.purchases[purchase_key] = b.purchases.build({payment_type: "Cash"})
+    assert_equal purchase_key, b.purchases[purchase_key].key
+    b.purchases[purchase_key].save!
+
+    b = Book.find_one(b.id)
+    assert_equal purchase_key, b.purchases[purchase_key].key
+
+    assert_equal purchase_key, b.purchases.first.key
+    assert_equal purchase_key, b.purchases.last.key
+    assert_equal [purchase_key], b.purchases.all.collect { |p| p.key }
+  end
+
+  should "be able to push an embedded doc if we want an auto gen key" do
+    b = Book.new(title: "BASE Jumping Basics")
+    doc = b.purchases.build({payment_type: "Cash"})
+    key = b.purchases.push(doc)
+    assert_nothing_raised { BSON::ObjectId(key) }
+    assert_equal doc, b.purchases[key]
+    b.insert!
+    b = Book.find_one(b.id)
+    assert_nothing_raised { BSON::ObjectId(key) }
+    assert_equal doc, b.purchases[key]
+  end
 end

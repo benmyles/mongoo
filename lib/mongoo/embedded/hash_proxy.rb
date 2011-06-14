@@ -8,8 +8,8 @@ module Mongoo
         @klass = klass
       end
 
-      def build(hash)
-        @klass.new(@doc,hash)
+      def build(hash, k=nil)
+        @klass.new(@doc, hash, k)
       end
 
       def raw
@@ -17,7 +17,7 @@ module Mongoo
       end
 
       def [](k)
-        build raw[k]
+        build raw[k], k
       end
 
       def delete(k)
@@ -29,7 +29,7 @@ module Mongoo
       end
 
       def each
-        raw.each { |k,v| yield(k, build(v)) }
+        raw.each { |k,v| yield(k, build(v, k)) }
       end
 
       def size
@@ -38,6 +38,23 @@ module Mongoo
 
       def keys
         raw.keys
+      end
+
+      def first
+        self[keys.first]
+      end
+
+      def last
+        self[keys.last]
+      end
+
+      def all
+        keys.collect { |k| self[k] }
+      end
+
+      def push(obj)
+        k = BSON::ObjectId.new.to_s
+        self[k] = obj; k
       end
 
     end # HashProxy

@@ -2,10 +2,15 @@ module Mongoo
   module Embedded
     class Base < Mongoo::Core
 
-      def initialize(parent, hash={})
+      def initialize(parent, hash={}, key=nil)
         @parent    = parent
         @persisted = persisted?
+        @key       = key
         init_from_hash(hash)
+      end
+
+      def key
+        @key
       end
 
       def persisted?
