@@ -77,6 +77,8 @@ module Mongoo
       end
 
       update_query = { "_id" => @doc.id }
+      update_query.merge!(@opts[:q]) if @opts[:q]
+
       if @opts[:only_if_current] == true
         @queue.each do |op, op_queue|
           op_queue.each do |k,v|

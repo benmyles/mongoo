@@ -468,5 +468,25 @@ class TestMongoo < Test::Unit::TestCase
     assert_equal "Benjamin", Person.find_one(p.id).name
   end
 
+  should "be able to specify a query for a modifier" do
+    p = Person.new(name: "Ben", interests: ["skydiving", "coding"], misc: { foo: { bar: 1, zar: 2 } })
+    p.insert!
+
+    assert p.mod! { |m| m.push('interests', 'reading') }
+    assert p.mod!(q: { 'interests' => { '$size' => 3 } }) { |m| m.push("interests", "swimming") }
+    assert_equal ["skydiving", "coding", "reading", "swimming"], p.interests
+
+    assert_raise(Mongoo::ModifierUpdateError) do
+      p.mod!(q: { 'interests' => { '$size' => 3 } }) { |m| m.push("interests", "base jumping") }
+    end
+    assert_equal ["skydiving", "coding", "reading", "swimming"], p.interests
+
+    p.mod!(q: { 'interests' => { '$size' => 4 } }) { |m| m.push("interests", "base jumping") }
+    assert_equal ["skydiving", "coding", "reading", "swimming", "base jumping"], p.interests
+
+    p = Person.find_one(p.id)
+    assert_equal ["skydiving", "coding", "reading", "swimming", "base jumping"], p.interests
+  end
+
 end
 
