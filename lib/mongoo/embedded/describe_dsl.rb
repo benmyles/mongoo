@@ -12,17 +12,26 @@ module Mongoo
       end
 
       def define_embeds_many_method(attrib_key, opts)
-        as = attrib_key
-        attrib_key = "embedded_#{attrib_key}"
+        embed_type   = opts[:type]
+        embed_type ||= :hash
 
-        attribute(attrib_key, :type => :hash)
+        as = attrib_key
+        attrib_key = "#{attrib_key}"
+
+        attribute(attrib_key, :type => embed_type, :define_methods => false)
 
         blk = Proc.new {
           if val = instance_variable_get("@#{as}")
             val
           else
-            instance_variable_set("@#{as}",
-              embedded_hash_proxy(get_or_set(attrib_key,{}), eval(opts[:class])))
+            case embed_type
+            when :hash then
+              instance_variable_set("@#{as}",
+                embedded_hash_proxy(get_or_set(attrib_key,{}), eval(opts[:class])))
+            when :array then
+              instance_variable_set("@#{as}",
+                embedded_array_proxy(get_or_set(attrib_key,[]), eval(opts[:class])))
+            end
           end
         }
         @klass.send(:define_method, as, &blk)
@@ -45,9 +54,9 @@ module Mongoo
 
       def define_embeds_one_method(attrib_key, opts)
         as = attrib_key
-        attrib_key = "embedded_#{attrib_key}"
+        attrib_key = "#{attrib_key}"
 
-        attribute(attrib_key, :type => :hash)
+        attribute(attrib_key, :type => :hash, :define_methods => false)
 
         blk = Proc.new {
           if val = instance_variable_get("@#{as}")

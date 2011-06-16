@@ -63,6 +63,7 @@ require "mongoo/base"
 
 require "mongoo/embedded/base"
 require "mongoo/embedded/hash_proxy"
+require "mongoo/embedded/array_proxy"
 
 require "mongoo/mongohash"
 require "mongoo/identity_map"

@@ -12,20 +12,22 @@ module Mongoo::Attributes
       end
     end
 
-    def attributes_tree
+    def attributes_tree(tree_opts={})
       tree = {}
       self.attributes.each do |name, opts|
-        parts = name.split(".")
-        curr_branch = tree
-        while part = parts.shift
-          if !parts.empty?
-            curr_branch[part.to_s] ||= {}
-            curr_branch = curr_branch[part.to_s]
-          else
-            curr_branch[part.to_s] = opts[:type]
+        unless tree_opts[:only_definable] == true && opts[:define_methods] == false
+          parts = name.split(".")
+          curr_branch = tree
+          while part = parts.shift
+            if !parts.empty?
+              curr_branch[part.to_s] ||= {}
+              curr_branch = curr_branch[part.to_s]
+            else
+              curr_branch[part.to_s] = opts[:type]
+            end
           end
-        end
-      end
+        end # unless
+      end # self.attributes
       tree
     end
 

@@ -1,5 +1,19 @@
 require 'helper'
 
+class Customer < Mongoo::Base
+  describe do |d|
+    d.attribute "name", :type => :string
+    d.embeds_many "addresses", :class => "Customer::Address", :type => :array
+  end
+end
+
+class Customer::Address < Mongoo::Embedded::Base
+  describe do |d|
+    d.attribute "street", :type => :string
+    d.attribute "city", :type => :string
+  end
+end
+
 class Book < Mongoo::Base
   describe do |d|
     d.attribute "title", :type => :string
@@ -45,6 +59,7 @@ end
 class TestEmbedded < Test::Unit::TestCase
   def setup
     Book.collection.drop
+    Customer.collection.drop
   end
 
   should "be able to work with embedded doc hashes" do
@@ -71,11 +86,11 @@ class TestEmbedded < Test::Unit::TestCase
     b = Book.new(title: "BASE Jumping Basics")
     b.sample_chapter = Book::Chapter.new(b, {})
     b.sample_chapter.title = "Understanding the Risks"
-    assert_equal "Understanding the Risks", b.g('embedded_sample_chapter')['title']
+    assert_equal "Understanding the Risks", b.g('sample_chapter')['title']
     b.insert!
     b = Book.find_one(b.id)
     assert_equal "Understanding the Risks", b.sample_chapter.title
-    assert_equal "Understanding the Risks", b.g('embedded_sample_chapter')['title']
+    assert_equal "Understanding the Risks", b.g('sample_chapter')['title']
   end
 
   should "validate embedded docs and can have nested embeds" do
@@ -85,7 +100,7 @@ class TestEmbedded < Test::Unit::TestCase
     purchase_id = BSON::ObjectId.new.to_s
     b.purchases[purchase_id] = b.purchases.build({})
     assert !b.valid?
-    assert_equal({:"embedded_purchases.#{purchase_id}.payment_type"=>["can't be blank"]}, b.errors)
+    assert_equal({:"purchases.#{purchase_id}.payment_type"=>["can't be blank"]}, b.errors)
     b.purchases[purchase_id].payment_type = "Cash"
     assert b.valid?
     b.update!
@@ -96,14 +111,14 @@ class TestEmbedded < Test::Unit::TestCase
     b.purchases[purchase_id].customer = Book::Purchase::Customer.new(b.purchases[purchase_id], name: "Jiminy")
     assert_equal "Jiminy", b.purchases[purchase_id].customer.name
     assert !b.valid?
-    assert_equal({:"embedded_purchases.#{purchase_id}.embedded_customer.phone"=>["can't be blank"]}, b.errors)
+    assert_equal({:"purchases.#{purchase_id}.customer.phone"=>["can't be blank"]}, b.errors)
     b.purchases[purchase_id].customer.phone = "123"
     assert b.valid?
     b.update!
     b = Book.find_one(b.id)
     assert_equal "Jiminy", b.purchases[purchase_id].customer.name
     b.purchases[purchase_id].customer = nil
-    assert_equal [[:unset, "embedded_purchases.#{purchase_id}.embedded_customer", 1]], b.changelog
+    assert_equal [[:unset, "purchases.#{purchase_id}.customer", 1]], b.changelog
     b.update!
     b = Book.find_one(b.id)
     assert_nil b.purchases[purchase_id].customer
@@ -182,5 +197,47 @@ class TestEmbedded < Test::Unit::TestCase
     b = Book.find_one(b.id)
     assert_nothing_raised { BSON::ObjectId(key) }
     assert_equal doc, b.purchases[key]
+  end
+
+  should "be able to have an embedded array doc" do
+    c = Customer.new(name: "Ben")
+    assert c.addresses.empty?
+    c.insert!
+
+    address = c.addresses.build(street: "123 Street", city: "Metropolis")
+    c.addresses << address
+    assert_equal address, c.addresses.first
+    assert_equal address, c.addresses[0]
+    assert_equal 1, c.addresses.size
+
+    c.update!
+    assert_equal address, c.addresses.first
+    assert_equal address, c.addresses[0]
+    assert_equal 1, c.addresses.size
+    c = Customer.find_one(c.id)
+    assert_equal address, c.addresses.first
+    assert_equal address, c.addresses[0]
+    assert_equal 1, c.addresses.size
+
+    market_st = c.addresses.build(street: "Market Street", city: "San Francisco")
+    c.mod! do |m|
+      m.push "addresses", market_st.to_hash
+    end
+
+    assert_equal 2, c.addresses.size
+    assert_equal market_st, c.addresses.last
+    c = Customer.find_one(c.id)
+    assert_equal address, c.addresses.first
+    assert_equal address, c.addresses[0]
+    assert_equal 2, c.addresses.size
+    assert_equal market_st, c.addresses[1]
+    assert_equal market_st, c.addresses.last
+
+    c.mod! do |m|
+      m.pull 'addresses', market_st
+    end
+
+    assert_equal 1, c.addresses.size
+    assert_equal [address], c.addresses.to_a
   end
 end

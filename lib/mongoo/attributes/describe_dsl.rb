@@ -8,7 +8,7 @@ module Mongoo
       end
 
       def define_attribute_methods
-        @klass.attributes_tree.each do |name, val|
+        @klass.attributes_tree(only_definable: true).each do |name, val|
           if val.is_a?(Hash)
             blk = Proc.new { Mongoo::AttributeProxy.new(val, [name], self) }
             @klass.send(:define_method, name, &blk)

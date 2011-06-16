@@ -24,16 +24,22 @@ module Mongoo
       end
     end
 
+    def cast_value(v)
+      if v.is_a?(Mongoo::Embedded::Base)
+        return v.to_hash
+      end; v
+    end
+
     def inc(k, v=1)
       v = sanitize_value(k,v)
       @queue["$inc"] ||= {}
-      @queue["$inc"]["#{@key_prefix}#{k}"] = v
+      @queue["$inc"]["#{@key_prefix}#{k}"] = cast_value(v)
     end
 
     def set(k,v)
       v = sanitize_value(k,v)
       @queue["$set"] ||= {}
-      @queue["$set"]["#{@key_prefix}#{k}"] = v
+      @queue["$set"]["#{@key_prefix}#{k}"] = cast_value(v)
     end
 
     def unset(k)
@@ -43,17 +49,17 @@ module Mongoo
 
     def push(k, v)
       @queue["$push"] ||= {}
-      @queue["$push"]["#{@key_prefix}#{k}"] = v
+      @queue["$push"]["#{@key_prefix}#{k}"] = cast_value(v)
     end
 
     def push_all(k, v)
       @queue["$pushAll"] ||= {}
-      @queue["$pushAll"]["#{@key_prefix}#{k}"] = v
+      @queue["$pushAll"]["#{@key_prefix}#{k}"] = cast_value(v)
     end
 
     def add_to_set(k,v)
       @queue["$addToSet"] ||= {}
-      @queue["$addToSet"]["#{@key_prefix}#{k}"] = v
+      @queue["$addToSet"]["#{@key_prefix}#{k}"] = cast_value(v)
     end
 
     def pop(k)
@@ -63,12 +69,12 @@ module Mongoo
 
     def pull(k, v)
       @queue["$pull"] ||= {}
-      @queue["$pull"]["#{@key_prefix}#{k}"] = v
+      @queue["$pull"]["#{@key_prefix}#{k}"] = cast_value(v)
     end
 
     def pull_all(k, v)
       @queue["$pullAll"] ||= {}
-      @queue["$pullAll"]["#{@key_prefix}#{k}"] = v
+      @queue["$pullAll"]["#{@key_prefix}#{k}"] = cast_value(v)
     end
 
     def run!
@@ -112,35 +118,71 @@ module Mongoo
                 @doc.mongohash.dot_delete( k )
                 @doc.persisted_mongohash.dot_delete( k )
               when "$push" then
-                new_val = (@doc.persisted_mongohash.dot_get(k) || []) + [v]
-                @doc.mongohash.dot_set( k, new_val )
-                @doc.persisted_mongohash.dot_set( k, new_val )
-              when "$pushAll" then
-                new_val = (@doc.persisted_mongohash.dot_get(k) || []) + v
-                @doc.mongohash.dot_set( k, new_val )
-                @doc.persisted_mongohash.dot_set( k, new_val )
-              when "$addToSet" then
-                new_val = (@doc.persisted_mongohash.dot_get(k) || [])
-                new_val << v unless new_val.include?(v)
-                @doc.mongohash.dot_set(k, new_val)
-                @doc.persisted_mongohash.dot_set(k, new_val)
-              when "$pop" then
-                new_val = (@doc.persisted_mongohash.dot_get(k) || [])
-                new_val.pop
-                @doc.mongohash.dot_set(k, new_val)
-                @doc.persisted_mongohash.dot_set(k, new_val)
-              when "$pull" then
-                new_val = (@doc.persisted_mongohash.dot_get(k) || [])
-                new_val.delete(v)
-                @doc.mongohash.dot_set(k, new_val)
-                @doc.persisted_mongohash.dot_set(k, new_val)
-              when "$pullAll" then
-                new_val = (@doc.persisted_mongohash.dot_get(k) || [])
-                v.each do |val|
-                  new_val.delete(val)
+                unless @doc.persisted_mongohash.dot_get(k)
+                  @doc.persisted_mongohash.dot_set(k, [])
                 end
-                @doc.mongohash.dot_set(k, new_val)
-                @doc.persisted_mongohash.dot_set(k, new_val)
+                unless @doc.mongohash.dot_get(k)
+                  @doc.mongohash.dot_set(k, [])
+                end
+
+                @doc.persisted_mongohash.dot_get(k) << v
+                @doc.mongohash.dot_get(k) << v
+              when "$pushAll" then
+                unless @doc.persisted_mongohash.dot_get(k)
+                  @doc.persisted_mongohash.dot_set(k, [])
+                end
+                unless @doc.mongohash.dot_get(k)
+                  @doc.mongohash.dot_set(k, [])
+                end
+
+                @doc.persisted_mongohash.dot_get(k).concat(v)
+                @doc.mongohash.dot_get(k).concat(v)
+              when "$addToSet" then
+                unless @doc.persisted_mongohash.dot_get(k)
+                  @doc.persisted_mongohash.dot_set(k, [])
+                end
+                unless @doc.mongohash.dot_get(k)
+                  @doc.mongohash.dot_set(k, [])
+                end
+
+                unless @doc.persisted_mongohash.dot_get(k).include?(v)
+                  @doc.persisted_mongohash.dot_get(k) << v
+                end
+                unless @doc.mongohash.dot_get(k).include?(v)
+                  @doc.mongohash.dot_get(k) << v
+                end
+              when "$pop" then
+               unless @doc.persisted_mongohash.dot_get(k)
+                  @doc.persisted_mongohash.dot_set(k, [])
+                end
+                unless @doc.mongohash.dot_get(k)
+                  @doc.mongohash.dot_set(k, [])
+                end
+
+                @doc.persisted_mongohash.dot_get(k).pop
+                @doc.mongohash.dot_get(k).pop
+              when "$pull" then
+                unless @doc.persisted_mongohash.dot_get(k)
+                  @doc.persisted_mongohash.dot_set(k, [])
+                end
+                unless @doc.mongohash.dot_get(k)
+                  @doc.mongohash.dot_set(k, [])
+                end
+
+                @doc.persisted_mongohash.dot_get(k).delete(v)
+                @doc.mongohash.dot_get(k).delete(v)
+              when "$pullAll" then
+                unless @doc.persisted_mongohash.dot_get(k)
+                  @doc.persisted_mongohash.dot_set(k, [])
+                end
+                unless @doc.mongohash.dot_get(k)
+                  @doc.mongohash.dot_set(k, [])
+                end
+
+                v.each do |val|
+                  @doc.persisted_mongohash.dot_get(k).delete(val)
+                  @doc.mongohash.dot_get(k).delete(val)
+                end
               end
             end
           end # @queue.each

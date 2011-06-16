@@ -11,6 +11,10 @@ module Mongoo
           Mongoo::Embedded::HashProxy.new(self, attrib, klass)
         end
 
+        def embedded_array_proxy(attrib, klass)
+          Mongoo::Embedded::ArrayProxy.new(self, attrib, klass)
+        end
+
         def embedded_doc(attrib, klass)
           klass.new(self, attrib)
         end

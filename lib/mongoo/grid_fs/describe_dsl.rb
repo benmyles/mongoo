@@ -10,15 +10,14 @@ module Mongoo
       end
 
       def define_grid_fs_file_method(name, opts)
-        attrib_name = "gridfs_#{name}"
-        attribute(attrib_name, :type => :hash)
+        attribute(name, :type => :hash, :define_methods => false)
 
         blk = Proc.new {
           if file = instance_variable_get("@#{name}")
             file
           else
             db_lambda = opts[:db] || lambda { self.db }
-            container = get_or_set(attrib_name, {})
+            container = get_or_set(name, {})
             file = Mongoo::GridFs::File.new(container, db_lambda)
             instance_variable_set("@#{name}", file)
           end
@@ -27,15 +26,14 @@ module Mongoo
       end # define_grid_fs_file_methods
 
       def define_grid_fs_files_method(name, opts)
-        attrib_name = "gridfs_#{name}"
-        attribute(attrib_name, :type => :hash)
+        attribute(name, :type => :hash, :define_methods => false)
 
         blk = Proc.new {
           if files = instance_variable_get("@#{name}")
             files
           else
             db_lambda = opts[:db] || lambda { self.db }
-            container = get_or_set(attrib_name, {})
+            container = get_or_set(name, {})
             files = Mongoo::GridFs::Files.new(container, db_lambda)
             instance_variable_set("@#{name}", files)
           end
