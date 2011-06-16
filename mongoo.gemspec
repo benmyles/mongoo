@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{mongoo}
-  s.version = "0.5.2"
+  s.version = "0.5.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ben Myles"]
-  s.date = %q{2011-06-15}
+  s.date = %q{2011-06-16}
   s.description = %q{Simple object mapper for MongoDB}
   s.email = %q{ben.myles@gmail.com}
   s.extra_rdoc_files = [
@@ -35,6 +35,7 @@ Gem::Specification.new do |s|
     "lib/mongoo/core.rb",
     "lib/mongoo/cursor.rb",
     "lib/mongoo/describe_dsl.rb",
+    "lib/mongoo/embedded/array_proxy.rb",
     "lib/mongoo/embedded/base.rb",
     "lib/mongoo/embedded/core_mixin.rb",
     "lib/mongoo/embedded/describe_dsl.rb",
