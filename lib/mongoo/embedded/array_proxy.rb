@@ -9,6 +9,7 @@ module Mongoo
       end
 
       def build(hash, i=nil)
+        return nil if hash.nil?
         @klass.new(@doc, hash, i)
       end
 

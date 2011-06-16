@@ -221,7 +221,7 @@ class TestEmbedded < Test::Unit::TestCase
 
     market_st = c.addresses.build(street: "Market Street", city: "San Francisco")
     c.mod! do |m|
-      m.push "addresses", market_st.to_hash
+      m.push "addresses", market_st
     end
 
     assert_equal 2, c.addresses.size
@@ -233,7 +233,7 @@ class TestEmbedded < Test::Unit::TestCase
     assert_equal market_st, c.addresses[1]
     assert_equal market_st, c.addresses.last
 
-    c.mod! do |m|
+    c.mod!({ q: { "addresses.city" => "San Francisco" } }) do |m|
       m.pull 'addresses', market_st
     end
 
