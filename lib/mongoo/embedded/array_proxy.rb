@@ -41,15 +41,15 @@ module Mongoo
       end
 
       def first
-        raw.first
+        build raw.first, 0
       end
 
       def last
-        raw.last
+        build raw.last, -1
       end
 
       def all
-        raw
+        raw.each_with_index { |v,i| build(v, i) }
       end
 
       alias :to_a :all
