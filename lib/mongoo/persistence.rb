@@ -210,6 +210,11 @@ module Mongoo
       insert(opts.merge(:safe => true))
     end
 
+    def reset_persisted_mongohash
+      @persisted = true
+      set_persisted_mongohash(mongohash)
+    end
+
     def update(opts={})
       _run_update_callbacks do
         unless persisted?
@@ -240,8 +245,7 @@ module Mongoo
         else
           ret = self.collection.update(update_query_hash, update_hash, opts)
           if !ret.is_a?(Hash) || (ret["updatedExisting"] && ret["n"] == 1)
-            set_persisted_mongohash(mongohash)
-            @persisted = true
+            reset_persisted_mongohash
             true
           else
             if opts[:only_if_current]

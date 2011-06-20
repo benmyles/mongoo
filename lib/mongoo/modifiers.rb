@@ -106,6 +106,7 @@ module Mongoo
         if !ret.is_a?(Hash) || (ret["err"] == nil && ret["n"] == 1)
           @queue.each do |op, op_queue|
             op_queue.each do |k, v|
+              duped_v = Marshal.load(Marshal.dump(v))
               case op
               when "$inc" then
                 new_val = @doc.persisted_mongohash.dot_get(k).to_i + v
@@ -113,7 +114,7 @@ module Mongoo
                 @doc.persisted_mongohash.dot_set( k, new_val )
               when "$set" then
                 @doc.mongohash.dot_set( k, v )
-                @doc.persisted_mongohash.dot_set( k, v )
+                @doc.persisted_mongohash.dot_set( k, duped_v )
               when "$unset" then
                 @doc.mongohash.dot_delete( k )
                 @doc.persisted_mongohash.dot_delete( k )
@@ -125,7 +126,7 @@ module Mongoo
                   @doc.mongohash.dot_set(k, [])
                 end
 
-                @doc.persisted_mongohash.dot_get(k) << v
+                @doc.persisted_mongohash.dot_get(k) << duped_v
                 @doc.mongohash.dot_get(k) << v
               when "$pushAll" then
                 unless @doc.persisted_mongohash.dot_get(k)
@@ -135,7 +136,7 @@ module Mongoo
                   @doc.mongohash.dot_set(k, [])
                 end
 
-                @doc.persisted_mongohash.dot_get(k).concat(v)
+                @doc.persisted_mongohash.dot_get(k).concat(duped_v)
                 @doc.mongohash.dot_get(k).concat(v)
               when "$addToSet" then
                 unless @doc.persisted_mongohash.dot_get(k)
@@ -146,7 +147,7 @@ module Mongoo
                 end
 
                 unless @doc.persisted_mongohash.dot_get(k).include?(v)
-                  @doc.persisted_mongohash.dot_get(k) << v
+                  @doc.persisted_mongohash.dot_get(k) << duped_v
                 end
                 unless @doc.mongohash.dot_get(k).include?(v)
                   @doc.mongohash.dot_get(k) << v
