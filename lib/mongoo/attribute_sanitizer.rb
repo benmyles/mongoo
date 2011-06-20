@@ -7,6 +7,8 @@ module Mongoo
         return val if val.nil? || field_type.nil?
 
         case field_type.to_sym
+        when :*
+          val
         when :string then
           val.is_a?(String) ? val : val.to_s
         when :symbol then
