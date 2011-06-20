@@ -259,4 +259,39 @@ class TestEmbedded < Test::Unit::TestCase
 
     assert_equal [[:set, "addresses", [{"street"=>"456 Street", "city"=>"Metropolis"}]]], c.changelog
   end
+
+  should "be able to do a custom update with modifiers" do
+    c = Customer.new(name: "Ben")
+    c.insert!
+
+    addresses = []
+    %w(123 456 789).each do |s|
+      addresses << c.addresses.build(street: "123 Street", city: "Metropolis")
+    end
+    c.mod! do |m|
+      m.push_all 'addresses', addresses
+    end
+
+    2.times do
+      assert_equal addresses[0], c.addresses.first
+      assert_equal addresses[2], c.addresses.last
+      assert_equal 3, c.addresses.size
+      c = Customer.find_one(c.id)
+    end
+
+    resp = c.raw_update do |u|
+      u.updates  = { "$push" => { "addresses" => { "street" => "1 E Main St", "city" => "NY" } } }
+      u.opts     = { safe: true }
+      u.will_change do |doc, res|
+        doc.addresses.raw << { "street" => "1 E Main St", "city" => "NY" }
+        doc.persisted_mongohash["addresses"] = doc.addresses.raw
+      end
+    end
+
+    2.times do
+      assert_equal 4, c.addresses.size
+      assert_equal "NY", c.addresses.last.city
+      c = Customer.find_one(c.id)
+    end
+  end
 end

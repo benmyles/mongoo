@@ -27,7 +27,11 @@ module Mongoo
     def cast_value(v)
       if v.is_a?(Mongoo::Embedded::Base)
         return v.to_hash
-      end; v
+      elsif v.is_a?(Array)
+        v.collect { |e| e.is_a?(Mongoo::Embedded::Base) ? e.to_hash : e }
+      else
+        v
+      end
     end
 
     def inc(k, v=1)

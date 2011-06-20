@@ -12,6 +12,33 @@ module Mongoo
 
   module Persistence
 
+    class RawUpdate
+      attr_accessor :criteria, :updates, :opts
+
+      def initialize(doc)
+        @doc = doc
+        @criteria ||= {}
+        @updates  ||= {}
+        @opts     ||= {}
+      end
+
+      def will_change(&block)
+        @will_change_block = block
+      end
+
+      def run
+        @criteria.stringify_keys!
+        @criteria["_id"] = @doc.id
+        ret = @doc.collection.update(self.criteria, self.updates, self.opts)
+        if !ret.is_a?(Hash) || (ret["updatedExisting"] && ret["n"] == 1)
+          if @will_change_block
+            @will_change_block.call(@doc, ret)
+          end
+        end
+        ret
+      end
+    end
+
     def self.included(base)
       base.extend(ClassMethods)
     end
@@ -210,9 +237,10 @@ module Mongoo
       insert(opts.merge(:safe => true))
     end
 
-    def reset_persisted_mongohash
-      @persisted = true
-      set_persisted_mongohash(mongohash)
+    def raw_update(&block)
+      raw = RawUpdate.new(self)
+      block.call(raw)
+      raw.run
     end
 
     def update(opts={})

@@ -44,6 +44,11 @@ module Mongoo
     end
     protected :init_from_hash
 
+    def reset_persisted_mongohash
+      @persisted = true
+      set_persisted_mongohash(mongohash)
+    end
+
     def set_mongohash(mongohash)
       @mongohash = mongohash
     end
