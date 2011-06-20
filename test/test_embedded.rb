@@ -240,4 +240,23 @@ class TestEmbedded < Test::Unit::TestCase
     assert_equal 1, c.addresses.size
     assert_equal [address], c.addresses.to_a
   end
+
+  should "be able to change an element in an embedded array doc" do
+    c = Customer.new(name: "Ben")
+    c.insert!
+
+    address = c.addresses.build(street: "123 Street", city: "Metropolis")
+    c.mod! do |m|
+      m.push 'addresses', address
+    end
+
+    assert_equal address, c.addresses.first
+    assert_equal address, c.addresses[0]
+    assert_equal 1, c.addresses.size
+
+    addr = c.addresses[0]
+    addr.street = "456 Street"
+
+    assert_equal [[:set, "addresses", [{"street"=>"456 Street", "city"=>"Metropolis"}]]], c.changelog
+  end
 end
