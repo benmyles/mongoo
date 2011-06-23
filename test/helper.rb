@@ -26,6 +26,13 @@ class SearchIndex < Mongoo::Base
   end
 end
 
+class Contact < Mongoo::Base
+  describe do |o|
+    o.attribute "email", :type => :string
+    o.index "email", :unique => true
+  end
+end
+
 class Person < Mongoo::Base
   describe do |d|
     d.attribute "name", :type => :string

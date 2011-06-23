@@ -1,5 +1,3 @@
-class Mongoo::UnknownAttributeError < Exception; end
-
 module Mongoo::Attributes
   extend ActiveSupport::Concern
 

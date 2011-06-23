@@ -1,15 +1,4 @@
 module Mongoo
-  class AlreadyInsertedError < Exception; end
-  class NotInsertedError < Exception; end
-  class InsertError < Exception; end
-  class StaleUpdateError < Exception; end
-  class UpdateError < Exception; end
-  class RemoveError < Exception; end
-  class NotValidError < Exception; end
-
-  class DbNameNotSet < Exception; end
-  class ConnNotSet < Exception; end
-
   module Persistence
 
     class RawUpdate
@@ -231,6 +220,12 @@ module Mongoo
       end
       Mongoo::IdentityMap.write(self) if Mongoo::IdentityMap.on?
       ret
+    rescue Mongo::OperationFailure => e
+      if e.message.to_s =~ /^11000\:/
+        raise Mongoo::DuplicateKeyError, e.message
+      else
+        raise e
+      end
     end
 
     def insert!(opts={})
@@ -283,6 +278,12 @@ module Mongoo
             end
           end
         end # if opts.delete(:find_and_modify)
+      end
+    rescue Mongo::OperationFailure => e
+      if e.message.to_s =~ /^11000\:/
+        raise Mongoo::DuplicateKeyError, e.message
+      else
+        raise e
       end
     end
 

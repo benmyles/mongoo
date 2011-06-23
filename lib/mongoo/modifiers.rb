@@ -1,7 +1,4 @@
 module Mongoo
-  class ModifierUpdateError < Exception; end
-  class UnknownAttributeError < Exception; end
-
   class ModifierBuilder
     def initialize(opts, doc)
       @opts  = opts
@@ -196,7 +193,13 @@ module Mongoo
           raise ModifierUpdateError, ret.inspect
         end
       end # if opts[:find_any_modify]
-    end
+    rescue Mongo::OperationFailure => e
+      if e.message.to_s =~ /^11000\:/
+        raise Mongoo::DuplicateKeyError, e.message
+      else
+        raise e
+      end
+    end # run!
   end
 
   module Modifiers

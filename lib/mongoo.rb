@@ -6,7 +6,7 @@ end
 # Mongoo.db   = "mydb"
 # Mongoo.conn => #<Mongo::Connection:0x00000100db8ac0>
 
-module Mongoo
+module Mongoo  
   class << self
     attr_accessor :verbose_debug
 
@@ -35,6 +35,27 @@ module Mongoo
       Mongo.async?
     end
   end
+end
+
+module Mongoo
+  class MongooException       < RuntimeError; end
+
+  class AlreadyInsertedError  < MongooException; end
+  class NotInsertedError      < MongooException; end
+  class InsertError           < MongooException; end
+  class StaleUpdateError      < MongooException; end
+  class UpdateError           < MongooException; end
+  class RemoveError           < MongooException; end
+  class NotValidError         < MongooException; end
+
+  class DbNameNotSet          < MongooException; end
+  class ConnNotSet            < MongooException; end
+
+  class DuplicateKeyError     < MongooException; end
+  class ModifierUpdateError   < MongooException; end
+  class UnknownAttributeError < MongooException; end
+  class InvalidAttributeValue < MongooException; end
+  class UnknownAttributeError < MongooException; end
 end
 
 require "forwardable"

@@ -1,6 +1,4 @@
 module Mongoo
-  class InvalidAttributeValue < Exception; end
-
   class AttributeSanitizer
     class << self
       def sanitize(field_type, val)

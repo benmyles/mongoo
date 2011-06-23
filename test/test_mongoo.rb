@@ -3,7 +3,7 @@ require 'helper'
 class TestMongoo < Test::Unit::TestCase
 
   def setup
-    [Person, TvShow, SearchIndex].each do |obj|
+    [Person, TvShow, SearchIndex, Contact].each do |obj|
       obj.drop
       obj.create_indexes
     end
@@ -486,6 +486,13 @@ class TestMongoo < Test::Unit::TestCase
 
     p = Person.find_one(p.id)
     assert_equal ["skydiving", "coding", "reading", "swimming", "base jumping"], p.interests
+  end
+
+  should "raise a specific error if a unique constraint is violated" do
+    c = Contact.new(email: "foo@bar.com")
+    assert c.insert!
+    c = Contact.new(email: "foo@bar.com")
+    assert_raise(Mongoo::DuplicateKeyError) { c.insert! }
   end
 
 end
