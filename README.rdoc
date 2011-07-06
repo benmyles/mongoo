@@ -1,17 +1,6 @@
 = mongoo
 
-== Latest Version: 0.3.0
-
-Usage (normal):
-  require 'mongoo'
-  Mongoo.conn = lambda { Mongo::Connection.new("localhost", 27017, :pool_size => 5, :timeout => 5) }
-  Mongoo.db   = "mongoo-test"
-
-Usage (async/em-synchrony):
-  require 'mongoo'
-  require 'mongoo/async'
-  Mongoo.conn = lambda { Mongo::Connection.new("localhost", 27017, :pool_size => 5, :timeout => 5) }
-  Mongoo.db   = "mongoo-test"
+Documentation right now is sparse. Your best bet is to look at the tests - every feature has coverage. See test/helper.rb for an example on setting up the connection and defining some models, and look to the individual test files for feature examples.
 
 == Contributing to mongoo
 
@@ -25,6 +14,6 @@ Usage (async/em-synchrony):
 
 == Copyright
 
-Copyright (c) 2010 Ben Myles. See LICENSE.txt for
+Copyright (c) 2010-2011 Ben Myles. See LICENSE.txt for
 further details.
 
